@@ -15,25 +15,26 @@
  * @see TASKS.md Task-4.5
  */
 
-import { getCollection, render, type CollectionEntry } from 'astro:content';
-import BaseLayout from '@/components/layout/BaseLayout.astro';
-import Gallery from '@/components/pdp/Gallery.astro';
-import ProductInfo from '@/components/pdp/ProductInfo.astro';
-import RelatedProducts from '@/components/pdp/RelatedProducts.astro';
-import Configurator from '@/components/pdp/Configurator.tsx';
-import ProductReviewsSection from '@/components/reviews/ProductReviewsSection';
-import { siteSettings } from '@/config/site-settings';
-import { getCategoryBySlug } from '@/config/categories';
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "@/components/layout/BaseLayout.astro";
+import Gallery from "@/components/pdp/Gallery.astro";
+import ProductInfo from "@/components/pdp/ProductInfo.astro";
+import RelatedProducts from "@/components/pdp/RelatedProducts.astro";
+import Configurator from "@/components/pdp/Configurator.tsx";
+import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
+import { siteSettings } from "@/config/site-settings";
+import { getCategoryBySlug } from "@/config/categories";
+import { createServerSupabase } from "@/lib/supabase";
 
 // Type definition
-type Product = CollectionEntry<'products'>;
+type Product = CollectionEntry<"products">;
 
 // Enable pre-rendering for this page in hybrid mode
 export const prerender = true;
 
 // Generate static paths for all products
 export async function getStaticPaths() {
-  const products = await getCollection('products');
+  const products = await getCollection("products");
 
   return products.map((product) => ({
     params: { slug: product.data.slug },
@@ -50,17 +51,14 @@ const { Content } = await render(product);
 const category = getCategoryBySlug(data.category);
 
 // Build gallery images array
-const galleryImages = [
-  data.featured_image,
-  ...(data.gallery || []),
-];
+const galleryImages = [data.featured_image, ...(data.gallery || [])];
 
 // Build breadcrumb trail
 const breadcrumbs = [
-  { label: 'Home', href: '/' },
-  { label: 'Shop', href: '/shop' },
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
   { label: category?.name || data.category, href: `/shop/${data.category}` },
-  { label: data.title, href: '' },
+  { label: data.title, href: "" },
 ];
 
 // Short description for Specifications section (customizable per product MD)
@@ -69,11 +67,63 @@ const shortDescription = data.short_description;
 // Build product variants for Configurator
 const variants = data.variants || [];
 
+// SSR pre-load reviews data for faster page load
+let initialReviews: any[] = [];
+let initialStats: any = null;
+let initialPagination: any = null;
+
+try {
+  const supabase = createServerSupabase(Astro.cookies);
+
+  // Fetch first 10 approved reviews
+  const { data: reviews, count } = await supabase
+    .from("reviews")
+    .select("*", { count: "exact" })
+    .eq("product_slug", data.slug)
+    .eq("status", "approved")
+    .order("created_at", { ascending: false })
+    .range(0, 9);
+
+  initialReviews = reviews || [];
+
+  // Fetch review stats
+  const { data: stats } = await supabase
+    .from("product_review_stats")
+    .select("*")
+    .eq("product_slug", data.slug)
+    .single();
+
+  initialStats = stats || {
+    review_count: 0,
+    average_rating: 0,
+    five_star: 0,
+    four_star: 0,
+    three_star: 0,
+    two_star: 0,
+    one_star: 0,
+    verified_count: 0,
+  };
+
+  initialPagination = {
+    page: 1,
+    limit: 10,
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / 10),
+  };
+} catch (e) {
+  // Silently fail - client-side will fetch
+  console.error("Failed to pre-load reviews:", e);
+}
+
 // SEO Metadata
-const pageTitle = data.meta_title || `${data.title} | Newborn Photography Props | ${siteSettings.siteName}`;
-const pageDescription = data.meta_description || `Buy ${data.title} at ${siteSettings.siteName}. Perfect for newborn photoshoots. ${data.material ? `High quality ${data.material}` : 'Premium quality'}, ${data.color_family ? `available in ${data.color_family}` : 'beautiful design'}. Worldwide shipping.`;
+const pageTitle =
+  data.meta_title ||
+  `${data.title} | Newborn Photography Props | ${siteSettings.siteName}`;
+const pageDescription =
+  data.meta_description ||
+  `Buy ${data.title} at ${siteSettings.siteName}. Perfect for newborn photoshoots. ${data.material ? `High quality ${data.material}` : "Premium quality"}, ${data.color_family ? `available in ${data.color_family}` : "beautiful design"}. Worldwide shipping.`;
 const pageUrl = `${siteSettings.siteUrl}/products/${data.slug}`;
-const pageImage = data.featured_image.startsWith('http')
+const pageImage = data.featured_image.startsWith("http")
   ? data.featured_image
   : `${siteSettings.siteUrl}${data.featured_image}`;
 
@@ -81,44 +131,44 @@ const pageImage = data.featured_image.startsWith('http')
 const productSchema = {
   "@context": "https://schema.org",
   "@type": "Product",
-  "name": data.title,
-  "image": galleryImages.map(img =>
-    img.startsWith('http') ? img : `${siteSettings.siteUrl}${img}`
+  name: data.title,
+  image: galleryImages.map((img) =>
+    img.startsWith("http") ? img : `${siteSettings.siteUrl}${img}`,
   ),
-  "description": pageDescription,
-  "sku": data.sku_prefix,
-  "brand": {
+  description: pageDescription,
+  sku: data.sku_prefix,
+  brand: {
     "@type": "Brand",
-    "name": siteSettings.siteName
+    name: siteSettings.siteName,
   },
-  "offers": {
+  offers: {
     "@type": "Offer",
-    "url": pageUrl,
-    "priceCurrency": siteSettings.currency,
-    "price": data.basePrice.toFixed(2),
-    "availability": data.in_stock
+    url: pageUrl,
+    priceCurrency: siteSettings.currency,
+    price: data.basePrice.toFixed(2),
+    availability: data.in_stock
       ? "https://schema.org/InStock"
       : "https://schema.org/OutOfStock",
-    "seller": {
+    seller: {
       "@type": "Organization",
-      "name": siteSettings.siteName
-    }
+      name: siteSettings.siteName,
+    },
   },
-  "category": category?.name || data.category,
-  ...(data.material && { "material": data.material }),
-  ...(data.color_family && { "color": data.color_family }),
+  category: category?.name || data.category,
+  ...(data.material && { material: data.material }),
+  ...(data.color_family && { color: data.color_family }),
 };
 
 // Breadcrumb Schema
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
-  "itemListElement": breadcrumbs.slice(0, -1).map((crumb, index) => ({
+  itemListElement: breadcrumbs.slice(0, -1).map((crumb, index) => ({
     "@type": "ListItem",
-    "position": index + 1,
-    "name": crumb.label,
-    "item": `${siteSettings.siteUrl}${crumb.href}`
-  }))
+    position: index + 1,
+    name: crumb.label,
+    item: `${siteSettings.siteUrl}${crumb.href}`,
+  })),
 };
 
 const meta = {
@@ -126,37 +176,44 @@ const meta = {
   description: pageDescription,
   image: pageImage,
   url: pageUrl,
-  type: 'product' as const,
+  type: "product" as const,
 };
 ---
 
 <BaseLayout {meta}>
   <!-- Schema.org structured data -->
   <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(breadcrumbSchema)}
+  />
 
   <main class="bg-brand-light/30 py-8">
     <div class="container mx-auto px-4 max-w-7xl">
       <!-- Breadcrumb -->
       <nav aria-label="Breadcrumb" class="mb-6">
         <ol class="flex flex-wrap items-center gap-2 text-sm">
-          {breadcrumbs.map((crumb, index) => (
-            <li class="flex items-center gap-2">
-              {index > 0 && (
-                <span class="text-gray-400" aria-hidden="true">/</span>
-              )}
-              {crumb.href ? (
-                <a
-                  href={crumb.href}
-                  class="text-brand hover:text-brand-dark transition-colors"
-                >
-                  {crumb.label}
-                </a>
-              ) : (
-                <span class="text-gray-600 font-medium">{crumb.label}</span>
-              )}
-            </li>
-          ))}
+          {
+            breadcrumbs.map((crumb, index) => (
+              <li class="flex items-center gap-2">
+                {index > 0 && (
+                  <span class="text-gray-400" aria-hidden="true">
+                    /
+                  </span>
+                )}
+                {crumb.href ? (
+                  <a
+                    href={crumb.href}
+                    class="text-brand hover:text-brand-dark transition-colors"
+                  >
+                    {crumb.label}
+                  </a>
+                ) : (
+                  <span class="text-gray-600 font-medium">{crumb.label}</span>
+                )}
+              </li>
+            ))
+          }
         </ol>
       </nav>
 
@@ -207,27 +264,35 @@ const meta = {
         </div>
 
         <!-- Specifications Section (custom per product MD) -->
-        {shortDescription && (
-          <div class="mb-8">
-            <h3 class="text-xl font-serif text-brand-dark mb-4">Specifications</h3>
-            <p class="text-gray-700 leading-relaxed">{shortDescription}</p>
-          </div>
-        )}
+        {
+          shortDescription && (
+            <div class="mb-8">
+              <h3 class="text-xl font-serif text-brand-dark mb-4">
+                Specifications
+              </h3>
+              <p class="text-gray-700 leading-relaxed">{shortDescription}</p>
+            </div>
+          )
+        }
 
         <!-- Care Instructions -->
-        {data.care_instructions && data.care_instructions.length > 0 && (
-          <div class="mb-8">
-            <h3 class="text-xl font-serif text-brand-dark mb-4">Care Instructions</h3>
-            <ul class="space-y-2">
-              {data.care_instructions.map(instruction => (
-                <li class="flex items-start">
-                  <span class="text-brand mr-2">•</span>
-                  <span class="text-gray-700">{instruction}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {
+          data.care_instructions && data.care_instructions.length > 0 && (
+            <div class="mb-8">
+              <h3 class="text-xl font-serif text-brand-dark mb-4">
+                Care Instructions
+              </h3>
+              <ul class="space-y-2">
+                {data.care_instructions.map((instruction) => (
+                  <li class="flex items-start">
+                    <span class="text-brand mr-2">•</span>
+                    <span class="text-gray-700">{instruction}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
       </div>
 
       <!-- Reviews Section -->
@@ -236,6 +301,9 @@ const meta = {
           client:visible
           productSlug={data.slug}
           productName={data.title}
+          initialReviews={initialReviews}
+          initialStats={initialStats}
+          initialPagination={initialPagination}
         />
       </section>
 

@@ -5,14 +5,54 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import ReviewsList from '@/components/reviews/ReviewsList';
 import ReviewForm from '@/components/reviews/ReviewForm';
 
+interface ReviewStats {
+  review_count: number;
+  average_rating: number;
+  five_star: number;
+  four_star: number;
+  three_star: number;
+  two_star: number;
+  one_star: number;
+  verified_count: number;
+}
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+interface Review {
+  id: string;
+  product_slug: string;
+  reviewer_name: string;
+  reviewer_email: string;
+  rating: number;
+  title?: string;
+  content: string;
+  images: string[];
+  verified_purchase: boolean;
+  admin_response?: string;
+  admin_responded_at?: string;
+  created_at: string;
+}
+
 interface ProductReviewsSectionProps {
   productSlug: string;
   productName: string;
+  // SSR pre-loaded data (optional)
+  initialReviews?: Review[];
+  initialStats?: ReviewStats | null;
+  initialPagination?: Pagination | null;
 }
 
 export default function ProductReviewsSection({
   productSlug,
   productName,
+  initialReviews,
+  initialStats,
+  initialPagination,
 }: ProductReviewsSectionProps) {
   const [showForm, setShowForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -36,14 +76,18 @@ export default function ProductReviewsSection({
     }, 500);
   }, []);
 
-  // Inject AggregateRating JSON-LD when review stats load
+  // Inject AggregateRating JSON-LD when review stats available
   useEffect(() => {
     async function injectSchema() {
       try {
-        const res = await fetch(`/api/reviews/${productSlug}?limit=1`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const stats = data.stats;
+        // Use SSR stats if available, otherwise fetch
+        let stats = initialStats;
+        if (!stats) {
+          const res = await fetch(`/api/reviews/${productSlug}?limit=1`);
+          if (!res.ok) return;
+          const data = await res.json();
+          stats = data.stats;
+        }
         if (!stats || stats.review_count === 0) return;
 
         // Build AggregateRating schema
@@ -79,7 +123,7 @@ export default function ProductReviewsSection({
     }
 
     injectSchema();
-  }, [productSlug, productName, refreshKey]);
+  }, [productSlug, productName, initialStats, refreshKey]);
 
   return (
     <div className="space-y-6">
@@ -88,6 +132,9 @@ export default function ProductReviewsSection({
         productSlug={productSlug}
         productName={productName}
         onWriteReview={handleWriteReview}
+        initialReviews={refreshKey === 0 ? initialReviews : undefined}
+        initialStats={initialStats}
+        initialPagination={refreshKey === 0 ? initialPagination : undefined}
       />
 
       {/* Review Form */}

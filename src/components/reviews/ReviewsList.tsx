@@ -30,6 +30,10 @@ interface ReviewsListProps {
   productSlug: string;
   productName: string;
   onWriteReview?: () => void;
+  // SSR pre-loaded data (optional)
+  initialReviews?: Review[];
+  initialStats?: ReviewStats | null;
+  initialPagination?: Pagination | null;
 }
 
 // ─── Sort Options Config ──────────────────────────────────────
@@ -98,9 +102,8 @@ function RatingSummary({
               <button
                 key={stars}
                 type="button"
-                className={`w-full flex items-center gap-2.5 py-1 group cursor-pointer bg-transparent border-none text-left transition-opacity duration-150 ${
-                  isActive ? 'opacity-100' : 'opacity-70 hover:opacity-100'
-                }`}
+                className={`w-full flex items-center gap-2.5 py-1 group cursor-pointer bg-transparent border-none text-left transition-opacity duration-150 ${isActive ? 'opacity-100' : 'opacity-70 hover:opacity-100'
+                  }`}
                 onClick={() => onFilterRating(isActive ? null : stars)}
                 aria-label={`Filter by ${stars} star reviews (${count})`}
               >
@@ -109,9 +112,8 @@ function RatingSummary({
                 </span>
                 <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      isActive ? 'bg-brand' : 'bg-amber-400'
-                    }`}
+                    className={`h-full rounded-full transition-all duration-300 ${isActive ? 'bg-brand' : 'bg-amber-400'
+                      }`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -215,15 +217,21 @@ export default function ReviewsList({
   productSlug,
   productName,
   onWriteReview,
+  initialReviews,
+  initialStats,
+  initialPagination,
 }: ReviewsListProps) {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [stats, setStats] = useState<ReviewStats | null>(null);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Use SSR data if available, otherwise start with loading state
+  const hasInitialData = initialReviews !== undefined;
+  const [reviews, setReviews] = useState<Review[]>(initialReviews || []);
+  const [stats, setStats] = useState<ReviewStats | null>(initialStats ?? null);
+  const [pagination, setPagination] = useState<Pagination | null>(initialPagination ?? null);
+  const [loading, setLoading] = useState(!hasInitialData);
   const [loadingMore, setLoadingMore] = useState(false);
   const [sort, setSort] = useState<SortOption>('newest');
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsFetch, setNeedsFetch] = useState(!hasInitialData);
 
   const isFirstLoad = useRef(true);
 
@@ -271,11 +279,18 @@ export default function ReviewsList({
 
   // Initial fetch and re-fetch on sort/filter change
   useEffect(() => {
+    // Skip initial fetch if we have SSR data and no filters/sort changed
     if (isFirstLoad.current) {
       isFirstLoad.current = false;
+      if (hasInitialData && sort === 'newest' && filterRating === null) {
+        return; // Use SSR data, skip fetch
+      }
     }
-    fetchReviews(1, false);
-  }, [fetchReviews]);
+    // Fetch when sort or filter changes, or when we need initial data
+    if (needsFetch || sort !== 'newest' || filterRating !== null) {
+      fetchReviews(1, false);
+    }
+  }, [fetchReviews, hasInitialData, needsFetch, sort, filterRating]);
 
   const handleLoadMore = () => {
     if (pagination && pagination.page < pagination.totalPages) {

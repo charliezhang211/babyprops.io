@@ -187,7 +187,7 @@ const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) =>
       <!-- Filter Sidebar (Desktop) -->
       <aside class="hidden lg:block">
         <FilterSidebar
-          client:load
+          client:idle
           mode="sidebar"
           priceConfig={{ min: minPrice, max: maxPrice }}
         />
@@ -211,13 +211,13 @@ const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) =>
           <!-- Mobile Filter Button -->
           <div class="flex items-center gap-3">
             <FilterSidebar
-              client:load
+              client:idle
               mode="drawer"
               priceConfig={{ min: minPrice, max: maxPrice }}
             />
 
             <!-- Sort Dropdown -->
-            <SortDropdown client:load />
+            <SortDropdown client:idle />
           </div>
         </div>
 

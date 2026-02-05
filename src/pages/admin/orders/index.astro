@@ -1,0 +1,12 @@
+---
+/**
+ * Admin Orders Management Page
+ * Uses OrdersManager React component
+ */
+import AdminLayout from "@/components/admin/AdminLayout.astro";
+import OrdersManager from "@/components/admin/OrdersManager";
+---
+
+<AdminLayout title="Orders Management" currentPage="orders">
+    <OrdersManager client:load />
+</AdminLayout>

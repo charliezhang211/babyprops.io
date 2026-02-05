@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       // Add stripe price
       let stripePrice = 0;
       if (item.stripe && product.stripes) {
-        const stripe = product.stripes.find(s => s.id === item.stripe?.id);
+        const stripe = product.stripes.find((s: { id: string; price?: number }) => s.id === item.stripe?.id);
         if (stripe) {
           stripePrice = stripe.price || 0;
         }
@@ -123,6 +123,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const shippingCost = 0;
     const tax = 0;
 
+    // Get visitor ID and user ID - moved here before coupon validation
+    const visitorId = locals.visitorId || 'guest';
+    const supabase = createServerSupabase(cookies);
+    const { data: { user } } = await supabase.auth.getUser();
+
     // Validate and apply coupon if provided
     let discount = 0;
     let appliedCouponCode: string | null = null;
@@ -146,11 +151,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         appliedCouponCode = coupon.code;
       }
     }
-
-    // Get visitor ID and user ID
-    const visitorId = locals.visitorId || 'guest';
-    const supabase = createServerSupabase(cookies);
-    const { data: { user } } = await supabase.auth.getUser();
 
     const total = calculatedSubtotal + shippingCost + tax - discount;
 

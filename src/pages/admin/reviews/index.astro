@@ -1,0 +1,12 @@
+---
+/**
+ * Admin Reviews Management Page
+ * Uses ReviewsManager React component
+ */
+import AdminLayout from "@/components/admin/AdminLayout.astro";
+import ReviewsManager from "@/components/admin/ReviewsManager";
+---
+
+<AdminLayout title="Reviews Management" currentPage="reviews">
+    <ReviewsManager client:load />
+</AdminLayout>

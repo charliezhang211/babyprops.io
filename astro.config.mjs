@@ -9,6 +9,11 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
+  // Prefetch links when they enter viewport for instant navigation
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'viewport',
+  },
   integrations: [
     react(),
     tailwind({

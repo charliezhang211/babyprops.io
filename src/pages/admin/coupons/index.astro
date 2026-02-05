@@ -1,0 +1,12 @@
+---
+/**
+ * Admin Coupons Management Page
+ * Uses CouponsManager React component
+ */
+import AdminLayout from "@/components/admin/AdminLayout.astro";
+import CouponsManager from "@/components/admin/CouponsManager";
+---
+
+<AdminLayout title="Coupons Management" currentPage="coupons">
+    <CouponsManager client:load />
+</AdminLayout>
