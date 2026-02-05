@@ -1,0 +1,41 @@
+---
+/**
+ * 首页 - BabyProps.io 主页
+ * 包含 HeroSection 和其他首页组件
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import HeroSection from '@/components/home/HeroSection.astro';
+import CategoryGrid from '@/components/home/CategoryGrid.astro';
+import FeaturedProducts from '@/components/home/FeaturedProducts.astro';
+import TrustBadges from '@/components/home/TrustBadges.astro';
+import InstagramFeed from '@/components/home/InstagramFeed.astro';
+import { siteSettings } from '@/config/site-settings';
+
+// SEO 元数据
+const meta = {
+  title: `${siteSettings.siteName} | ${siteSettings.tagline}`,
+  description: 'Shop professional newborn photography props at Dvotinst. 8 years serving photographers worldwide. Posing props, wraps, outfits & more. Free shipping over $99.',
+  url: siteSettings.siteUrl,
+  type: 'website' as const,
+};
+---
+
+<BaseLayout {meta}>
+  <!-- Hero Section - 全屏英雄区块 -->
+  <HeroSection />
+
+  <!-- Category Grid - 8 大分类展示 -->
+  <CategoryGrid />
+
+  <!-- Featured Products - 精选产品 -->
+  <FeaturedProducts />
+
+  <!-- Trust Badges - 信任徽章 -->
+  <TrustBadges />
+
+  <!-- Instagram Feed - 社交媒体展示 -->
+  <InstagramFeed />
+</BaseLayout>

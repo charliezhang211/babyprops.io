@@ -1,0 +1,80 @@
+---
+// RatingSummary - Displays product rating in the product header area
+interface Props {
+    rating?: number;
+    reviewCount?: number;
+    showCount?: boolean;
+}
+
+const { rating = 0, reviewCount = 0, showCount = true } = Astro.props;
+const hasReviews = reviewCount > 0;
+const displayRating = hasReviews ? rating : 0;
+const fullStars = Math.floor(displayRating);
+const hasHalfStar = displayRating % 1 >= 0.5;
+const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+---
+
+<a href="#reviews" class="inline-flex items-center gap-2 mb-3 no-underline transition-opacity duration-150 hover:opacity-80" data-pdp="rating-summary">
+    <div class="flex gap-0.5">
+        {
+            Array(fullStars)
+                .fill(null)
+                .map(() => (
+                    <svg
+                        class="w-4 h-4 max-md:w-3.5 max-md:h-3.5"
+                        viewBox="0 0 24 24"
+                        fill="#FFD700"
+                        stroke="#FFD700"
+                        stroke-width="1.5"
+                    >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                ))
+        }
+        {
+            hasHalfStar && (
+                <svg
+                    class="w-4 h-4 max-md:w-3.5 max-md:h-3.5"
+                    viewBox="0 0 24 24"
+                    stroke="#FFD700"
+                    stroke-width="1.5"
+                >
+                    <defs>
+                        <linearGradient id="halfFill">
+                            <stop offset="50%" stop-color="#FFD700" />
+                            <stop offset="50%" stop-color="transparent" />
+                        </linearGradient>
+                    </defs>
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                        fill="url(#halfFill)"
+                    />
+                </svg>
+            )
+        }
+        {
+            Array(emptyStars)
+                .fill(null)
+                .map(() => (
+                    <svg
+                        class="w-4 h-4 max-md:w-3.5 max-md:h-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#FFD700"
+                        stroke-width="1.5"
+                    >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                ))
+        }
+    </div>
+    {
+        showCount && (
+            <span class="text-sm max-md:text-xs text-slate-400 underline underline-offset-2 hover:text-brand">
+                {hasReviews
+                    ? `(${reviewCount} customer review${reviewCount > 1 ? 's' : ''})`
+                    : 'Be the first to review'}
+            </span>
+        )
+    }
+</a>

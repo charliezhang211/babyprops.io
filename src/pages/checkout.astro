@@ -1,0 +1,24 @@
+---
+/**
+ * Checkout Page - Shipping address and payment
+ * @see CLAUDE.md Section 6 - Page Architecture
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import CheckoutPage from '@/components/commerce/CheckoutPage.tsx';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `${siteSettings.checkout.pageTitle} | ${siteSettings.siteName}`,
+  description: 'Complete your order with secure PayPal checkout.',
+  noindex: true,
+};
+---
+
+<BaseLayout {meta}>
+  <main class="container mx-auto px-4 py-8">
+    <CheckoutPage client:load />
+  </main>
+</BaseLayout>

@@ -1,0 +1,159 @@
+---
+// 📍 src/components/plp/ProductCard.astro
+// 产品卡片组件 - 用于 PLP 页面的产品网格
+
+import { Image } from 'astro:assets';
+import Badge from '@/components/ui/Badge.astro';
+import Button from '@/components/ui/Button.astro';
+import ProductCardRating from '@/components/reviews/ProductCardRating';
+import { formatPrice } from '@/config/site';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  product: CollectionEntry<'products'>;
+  showQuickAdd?: boolean;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+}
+
+const {
+  product,
+  showQuickAdd = false,
+  class: className = '',
+  loading = 'lazy',
+} = Astro.props;
+
+const { data } = product;
+const productUrl = `/products/${data.slug}`;
+
+// 价格显示
+const price = formatPrice(data.basePrice);
+
+// 特性标签 (材质 + 色系)
+const attributes = [
+  data.material,
+  data.color_family,
+].filter(Boolean);
+
+// 徽章优先级: Sale > New > Featured > Handmade
+const badge = data.is_new ? 'new' : data.is_featured ? 'featured' : null;
+---
+
+<article
+  class:list={[
+    'group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300',
+    'border border-gray-100 hover:border-brand/30',
+    className,
+  ]}
+  data-component="product-card"
+  data-product-id={product.id}
+>
+  {/* 产品图片容器 */}
+  <a href={productUrl} class="block relative aspect-square overflow-hidden bg-brand-light/20">
+    {/* 徽章 (左上角) */}
+    {badge && (
+      <div class="absolute top-3 left-3 z-10">
+        <Badge variant={badge} size="sm" />
+      </div>
+    )}
+
+    {/* 库存状态 (右上角) */}
+    {!data.in_stock && (
+      <div class="absolute top-3 right-3 z-10">
+        <Badge variant="custom" size="sm" class="bg-gray-400">
+          Out of Stock
+        </Badge>
+      </div>
+    )}
+
+    {/* 产品图片 - 悬停时放大 */}
+    <img
+      src={data.featured_image}
+      alt={data.title}
+      loading={loading}
+      decoding="async"
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+    />
+
+    {/* 快速加购按钮 (悬停显示) */}
+    {showQuickAdd && data.in_stock && (
+      <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Button
+          variant="primary"
+          size="sm"
+          class="w-full"
+          data-product-slug={data.slug}
+          data-quick-add
+        >
+          Quick Add
+        </Button>
+      </div>
+    )}
+  </a>
+
+  {/* 产品信息 */}
+  <div class="p-4">
+    {/* 产品标题 */}
+    <a href={productUrl} class="block mb-1.5 group/title">
+      <h3 class="text-base font-medium text-gray-900 line-clamp-2 group-hover/title:text-brand transition-colors">
+        {data.title}
+      </h3>
+    </a>
+
+    {/* 评分 (client-side loaded) */}
+    <div class="mb-2">
+      <ProductCardRating client:visible productSlug={data.slug} />
+    </div>
+
+    {/* 特性标签 (材质/色系) */}
+    {attributes.length > 0 && (
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        {attributes.map((attr) => (
+          <span class="inline-flex items-center px-2 py-0.5 text-xs text-brand-dark bg-brand-light/50 rounded">
+            {attr}
+          </span>
+        ))}
+      </div>
+    )}
+
+    {/* 底部: 价格 + 手工标签 */}
+    <div class="flex items-center justify-between">
+      {/* 价格 */}
+      <span class="text-lg font-semibold text-brand-dark font-serif">
+        {price}
+      </span>
+
+      {/* 手工制作标签 */}
+      {data.is_handmade && (
+        <span
+          class="inline-flex items-center gap-1 text-xs text-brand-dark"
+          title="Handmade with care"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span class="hidden sm:inline">Handmade</span>
+        </span>
+      )}
+    </div>
+
+    {/* 道具尺寸信息 (如有) */}
+    {data.prop_size && (
+      <div class="mt-2 pt-2 border-t border-gray-100">
+        <span class="text-xs text-gray-500">
+          Size: <span class="text-gray-700 font-medium">{data.prop_size}</span>
+        </span>
+      </div>
+    )}
+  </div>
+</article>
+
+<style>
+  /* 行数限制 (2行标题) */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

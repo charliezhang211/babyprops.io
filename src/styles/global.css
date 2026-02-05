@@ -1,0 +1,1095 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - Morandic Palette */
+    --color-brand: 212 165 165;        /* #D4A5A5 - Dusty Rose */
+    --color-brand-light: 245 240 235;  /* #F5F0EB - Warm Cream */
+    --color-brand-dark: 156 139 126;   /* #9C8B7E - Soft Brown */
+    --color-brand-accent: 180 196 164; /* #B4C4A4 - Sage Green */
+  }
+
+  body {
+    @apply bg-white text-gray-900 font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-brand text-white px-6 py-3 rounded-full
+           hover:bg-brand-dark transition-colors duration-300
+           font-medium shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-brand text-brand px-6 py-3 rounded-full
+           hover:bg-brand hover:text-white transition-colors duration-300
+           font-medium;
+  }
+
+  .btn-outline {
+    @apply border border-gray-300 text-gray-700 px-6 py-3 rounded-full
+           hover:border-brand hover:text-brand transition-colors duration-300;
+  }
+
+  /* Typography */
+  .section-title {
+    @apply text-3xl md:text-4xl font-serif text-brand-dark text-center mb-8;
+  }
+
+  .section-subtitle {
+    @apply text-lg md:text-xl text-gray-600 text-center mb-12;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  /* Form Elements */
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent
+           transition-colors duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+}
+
+@layer utilities {
+  /* Custom Utilities */
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* ==============================================
+ * Auth Form Styles - Brand Morandic Palette
+ * ============================================== */
+
+/* Auth Page Layout */
+.auth-page {
+  @apply min-h-screen flex items-center justify-center bg-brand-light py-12 px-4;
+}
+
+.auth-container {
+  @apply w-full max-w-md;
+}
+
+.auth-card {
+  @apply bg-white rounded-2xl shadow-lg p-8 md:p-10;
+}
+
+.auth-logo {
+  @apply text-center mb-8;
+}
+
+.auth-logo a {
+  @apply inline-block;
+}
+
+.auth-logo-text {
+  @apply text-3xl font-serif font-bold text-brand-dark;
+}
+
+.auth-title {
+  @apply text-2xl font-serif text-brand-dark text-center mb-2;
+}
+
+.auth-subtitle {
+  @apply text-sm text-gray-500 text-center mb-6;
+}
+
+/* Auth Form */
+.auth-form {
+  @apply space-y-5;
+}
+
+/* Form Groups */
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-brand-dark;
+}
+
+.form-input {
+  @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-lg
+         text-gray-900 placeholder-gray-400
+         focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent
+         transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.form-input.error {
+  @apply border-red-400 focus:ring-red-400;
+}
+
+/* Password Input */
+.password-input-wrapper {
+  @apply relative;
+}
+
+.password-input-wrapper .form-input {
+  @apply pr-12;
+}
+
+.password-toggle {
+  @apply absolute right-3 top-1/2 -translate-y-1/2 p-1
+         text-gray-400 hover:text-brand-dark
+         transition-colors duration-200;
+}
+
+/* Auth Messages */
+.auth-message {
+  @apply px-4 py-3 rounded-lg text-sm;
+}
+
+.auth-message.error {
+  @apply bg-red-50 text-red-600 border border-red-200;
+}
+
+.auth-message.success {
+  @apply bg-brand-accent/20 text-green-700 border border-brand-accent/30;
+}
+
+/* Submit Button */
+.auth-submit {
+  @apply w-full py-3 px-6 bg-brand text-white font-medium rounded-full
+         hover:bg-brand-dark transition-colors duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed
+         flex items-center justify-center gap-2;
+}
+
+/* Spinner */
+.auth-spinner {
+  @apply inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin;
+}
+
+/* Auth Links */
+.auth-link {
+  @apply text-brand hover:text-brand-dark transition-colors duration-200;
+}
+
+.forgot-password {
+  @apply text-right;
+}
+
+.forgot-password .auth-link {
+  @apply text-sm text-gray-500 hover:text-brand;
+}
+
+/* Auth Footer */
+.auth-footer {
+  @apply pt-4 text-center text-sm text-gray-500;
+}
+
+.auth-footer a {
+  @apply text-brand font-medium hover:text-brand-dark transition-colors duration-200;
+}
+
+/* Checkbox */
+.form-checkbox {
+  @apply flex items-start gap-3 text-sm text-gray-600;
+}
+
+.form-checkbox input[type="checkbox"] {
+  @apply mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand;
+}
+
+.form-checkbox a {
+  @apply text-brand hover:text-brand-dark underline;
+}
+
+/* Divider */
+.auth-divider {
+  @apply flex items-center my-6;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  @apply flex-1 h-px bg-gray-200 content-[''];
+}
+
+.auth-divider span {
+  @apply px-4 text-sm text-gray-400;
+}
+
+/* Trust Badge */
+.auth-trust {
+  @apply mt-6 pt-6 border-t border-gray-100 flex items-center justify-center gap-2 text-xs text-gray-400;
+}
+
+.auth-trust svg {
+  @apply w-4 h-4;
+}
+
+/* Form Hint/Error Text */
+.form-hint {
+  @apply text-xs text-gray-500 mt-1;
+}
+
+.form-error {
+  @apply text-xs text-red-500 mt-1;
+}
+
+/* ==============================================
+ * Account Dashboard Styles - Brand Morandic Palette
+ * ============================================== */
+
+/* Account Layout */
+.account-layout {
+  @apply flex flex-col lg:flex-row gap-8 mt-6;
+}
+
+.account-sidebar {
+  @apply w-full lg:w-64 flex-shrink-0;
+}
+
+.account-main {
+  @apply flex-1 min-w-0;
+}
+
+/* Account User Card */
+.account-user {
+  @apply bg-white rounded-xl p-4 shadow-sm flex items-center gap-4 mb-4;
+}
+
+.account-avatar {
+  @apply w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center
+         font-semibold text-lg flex-shrink-0;
+}
+
+.account-user-info {
+  @apply min-w-0;
+}
+
+.account-user-name {
+  @apply font-medium text-brand-dark truncate;
+}
+
+.account-user-email {
+  @apply text-sm text-gray-500 truncate;
+}
+
+/* Account Navigation */
+.account-nav {
+  @apply bg-white rounded-xl shadow-sm overflow-hidden;
+}
+
+.account-nav-link {
+  @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-brand-light hover:text-brand-dark
+         transition-colors duration-200 border-b border-gray-100 last:border-b-0;
+}
+
+.account-nav-link svg {
+  @apply w-5 h-5 flex-shrink-0;
+}
+
+.account-nav-link.active {
+  @apply bg-brand-light text-brand-dark font-medium border-l-4 border-brand;
+}
+
+.account-nav-link.logout {
+  @apply text-red-500 hover:bg-red-50 hover:text-red-600 cursor-pointer border-b-0;
+}
+
+.account-nav-divider {
+  @apply h-px bg-gray-200 my-2;
+}
+
+/* Account Welcome Section */
+.account-welcome {
+  @apply mb-8;
+}
+
+.account-welcome-title {
+  @apply text-2xl md:text-3xl font-serif text-brand-dark mb-2;
+}
+
+.account-welcome-subtitle {
+  @apply text-gray-500;
+}
+
+/* Account Quick Links Grid */
+.account-quick-links {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4 mb-8;
+}
+
+.account-quick-card {
+  @apply bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200
+         flex items-center gap-4 cursor-pointer border border-transparent hover:border-brand/30;
+}
+
+.account-quick-icon {
+  @apply w-12 h-12 rounded-full bg-brand-light flex items-center justify-center flex-shrink-0
+         transition-colors duration-200;
+}
+
+.account-quick-card:hover .account-quick-icon {
+  background-color: rgb(212 165 165 / 0.2);
+}
+
+.account-quick-icon svg {
+  @apply w-6 h-6 text-brand-dark;
+}
+
+.account-quick-content {
+  @apply flex-1 min-w-0;
+}
+
+.account-quick-title {
+  @apply font-medium text-brand-dark transition-colors duration-200;
+}
+
+.account-quick-card:hover .account-quick-title {
+  @apply text-brand;
+}
+
+.account-quick-description {
+  @apply text-sm text-gray-500;
+}
+
+.account-quick-badge {
+  @apply inline-block mt-1 px-2 py-0.5 bg-brand/10 text-brand text-xs rounded-full font-medium;
+}
+
+.account-quick-arrow {
+  @apply text-gray-300 transition-colors duration-200 transform;
+}
+
+.account-quick-card:hover .account-quick-arrow {
+  @apply text-brand translate-x-1;
+}
+
+.account-quick-arrow svg {
+  @apply w-5 h-5;
+}
+
+/* Account Section */
+.account-section {
+  @apply mb-8;
+}
+
+.account-section-header {
+  @apply flex items-center justify-between mb-4;
+}
+
+.account-section-title {
+  @apply text-xl font-serif text-brand-dark;
+}
+
+.account-section-link {
+  @apply text-sm text-brand hover:text-brand-dark flex items-center gap-1 transition-colors duration-200;
+}
+
+/* Account Card */
+.account-card {
+  @apply bg-white rounded-xl p-6 shadow-sm;
+}
+
+.account-card-header {
+  @apply flex items-center justify-between pb-4 border-b border-gray-100 mb-4;
+}
+
+.account-card-title {
+  @apply text-lg font-medium text-brand-dark;
+}
+
+.account-card-action {
+  @apply text-sm text-brand hover:text-brand-dark transition-colors duration-200;
+}
+
+/* Account Empty State */
+.account-empty-state {
+  @apply bg-white rounded-xl p-8 text-center shadow-sm;
+}
+
+.account-empty-icon {
+  @apply w-16 h-16 mx-auto mb-4 text-gray-300;
+}
+
+.account-empty-icon svg {
+  @apply w-full h-full;
+}
+
+.account-empty-title {
+  @apply text-lg font-medium text-brand-dark mb-2;
+}
+
+.account-empty-description {
+  @apply text-gray-500 text-sm;
+}
+
+/* Account Orders List */
+.account-orders-list {
+  @apply space-y-4;
+}
+
+.account-order-card {
+  @apply bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200
+         block border border-transparent hover:border-brand/20;
+}
+
+.account-order-header {
+  @apply flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-100;
+}
+
+.account-order-info {
+  @apply flex items-center gap-3;
+}
+
+.account-order-number {
+  @apply font-medium text-brand-dark;
+}
+
+.account-order-date {
+  @apply text-sm text-gray-500;
+}
+
+.account-order-status {
+  @apply px-2.5 py-1 rounded-full text-xs font-medium;
+}
+
+.account-order-body {
+  @apply flex items-center justify-between px-5 py-4;
+}
+
+.account-order-thumbnails {
+  @apply flex -space-x-3;
+}
+
+.account-order-thumb {
+  @apply w-12 h-12 rounded-lg border-2 border-white overflow-hidden bg-gray-100 flex-shrink-0;
+}
+
+.account-order-thumb-placeholder {
+  @apply w-full h-full flex items-center justify-center text-gray-300;
+}
+
+.account-order-thumb-placeholder svg {
+  @apply w-6 h-6;
+}
+
+.account-order-thumb-more {
+  @apply w-12 h-12 rounded-lg border-2 border-white bg-brand-light text-brand-dark
+         flex items-center justify-center text-sm font-medium flex-shrink-0;
+}
+
+.account-order-summary {
+  @apply text-right;
+}
+
+.account-order-items {
+  @apply text-sm text-gray-500;
+}
+
+.account-order-total {
+  @apply font-medium text-brand-dark;
+}
+
+.account-order-footer {
+  @apply px-5 py-3 border-t border-gray-100;
+}
+
+.account-order-view {
+  @apply text-sm text-brand flex items-center gap-1 hover:text-brand-dark transition-colors duration-200;
+}
+
+/* Account Help Card */
+.account-help-card {
+  @apply bg-white rounded-xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-4;
+}
+
+.account-help-icon {
+  @apply w-12 h-12 rounded-full bg-brand-light flex items-center justify-center flex-shrink-0;
+}
+
+.account-help-icon svg {
+  @apply w-6 h-6 text-brand-dark;
+}
+
+.account-help-content {
+  @apply flex-1;
+}
+
+.account-help-title {
+  @apply font-medium text-brand-dark mb-1;
+}
+
+.account-help-description {
+  @apply text-sm text-gray-500;
+}
+
+.account-help-actions {
+  @apply flex gap-3 mt-4 md:mt-0;
+}
+
+.account-help-btn {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+         transition-colors duration-200;
+}
+
+.account-help-btn.whatsapp {
+  @apply bg-green-500 text-white hover:bg-green-600;
+}
+
+.account-help-btn.email {
+  @apply bg-brand-light text-brand-dark hover:bg-brand hover:text-white;
+}
+
+/* Address Manager Styles */
+.addresses-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.address-card {
+  @apply bg-white rounded-xl p-5 border border-gray-200 relative;
+}
+
+.address-card.default {
+  @apply border-brand;
+}
+
+.address-default-badge {
+  @apply absolute top-3 right-3 px-2 py-0.5 bg-brand/10 text-brand text-xs rounded-full font-medium;
+}
+
+.address-label {
+  @apply text-xs font-medium text-gray-400 uppercase tracking-wide mb-2;
+}
+
+.address-details {
+  @apply text-gray-600 text-sm leading-relaxed mb-4;
+}
+
+.address-details strong {
+  @apply text-brand-dark;
+}
+
+.address-actions {
+  @apply flex gap-2 pt-3 border-t border-gray-100;
+}
+
+.address-btn {
+  @apply px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200;
+}
+
+.address-btn.edit {
+  @apply text-brand hover:bg-brand-light;
+}
+
+.address-btn.default {
+  @apply text-gray-500 hover:bg-gray-100;
+}
+
+.address-btn.delete {
+  @apply text-red-500 hover:bg-red-50;
+}
+
+.add-address-card {
+  @apply bg-white rounded-xl p-5 border-2 border-dashed border-gray-200
+         flex flex-col items-center justify-center gap-2 cursor-pointer
+         hover:border-brand hover:bg-brand-light/50 transition-all duration-200
+         min-h-[150px] text-gray-400 hover:text-brand-dark;
+}
+
+.add-address-card svg {
+  @apply transition-transform duration-200;
+}
+
+.add-address-card:hover svg {
+  @apply transform scale-110;
+}
+
+/* ==============================================
+ * Order History Page Styles
+ * ============================================== */
+
+/* Order Filter Tabs */
+.order-filter-tabs {
+  @apply flex flex-wrap gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm;
+}
+
+.order-filter-tab {
+  @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+         text-gray-500 hover:text-brand-dark hover:bg-brand-light/50
+         transition-all duration-200;
+}
+
+.order-filter-tab.active {
+  @apply bg-brand text-white hover:bg-brand-dark hover:text-white;
+}
+
+.order-filter-count {
+  @apply px-2 py-0.5 rounded-full text-xs font-medium min-w-[24px] text-center;
+}
+
+.order-filter-tab:not(.active) .order-filter-count {
+  @apply bg-gray-100 text-gray-600;
+}
+
+.order-filter-tab.active .order-filter-count {
+  @apply bg-white/20 text-white;
+}
+
+/* Order Results Info */
+.order-results-info {
+  @apply text-sm text-gray-500 mb-4;
+}
+
+/* Order Pagination */
+.order-pagination {
+  @apply flex items-center justify-center gap-2 mt-8;
+}
+
+.order-pagination-btn {
+  @apply flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium
+         bg-white border border-gray-200 text-gray-600
+         hover:border-brand hover:text-brand hover:bg-brand-light/30
+         transition-all duration-200 shadow-sm;
+}
+
+.order-pagination-btn.disabled {
+  @apply opacity-50 cursor-not-allowed hover:border-gray-200 hover:text-gray-600 hover:bg-white;
+}
+
+.order-pagination-pages {
+  @apply flex items-center gap-1;
+}
+
+.order-pagination-page {
+  @apply w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium
+         bg-white border border-gray-200 text-gray-600
+         hover:border-brand hover:text-brand hover:bg-brand-light/30
+         transition-all duration-200;
+}
+
+.order-pagination-page.active {
+  @apply bg-brand border-brand text-white hover:bg-brand-dark hover:border-brand-dark hover:text-white;
+}
+
+.order-pagination-ellipsis {
+  @apply px-2 text-gray-400;
+}
+
+/* Mobile Responsive for Order Pagination */
+@media (max-width: 640px) {
+  .order-pagination-pages {
+    @apply hidden;
+  }
+
+  .order-filter-tabs {
+    @apply overflow-x-auto -mx-4 px-4 rounded-none bg-transparent shadow-none;
+  }
+
+  .order-filter-tab {
+    @apply whitespace-nowrap bg-white shadow-sm;
+  }
+}
+
+/* ==============================================
+ * Order Detail Page Styles
+ * ============================================== */
+
+/* Back Link */
+.order-detail-back {
+  @apply inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark
+         transition-colors duration-200 mb-6;
+}
+
+/* Order Header */
+.order-detail-header {
+  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6;
+}
+
+.order-detail-title {
+  @apply text-2xl md:text-3xl font-serif text-brand-dark;
+}
+
+.order-detail-date {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+/* Cancelled/Refunded Notice */
+.order-detail-notice {
+  @apply flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 mb-6;
+}
+
+/* Order Detail Card */
+.order-detail-card {
+  @apply bg-white rounded-xl shadow-sm p-5 md:p-6 mb-4;
+}
+
+.order-detail-card-title {
+  @apply text-lg font-serif text-brand-dark pb-3 mb-4 border-b border-gray-100;
+}
+
+/* Two Column Grid */
+.order-detail-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+/* Order Timeline */
+.order-timeline {
+  @apply relative;
+}
+
+.order-timeline-step {
+  @apply flex gap-4 pb-6 last:pb-0;
+}
+
+.order-timeline-indicator {
+  @apply flex flex-col items-center flex-shrink-0;
+}
+
+.order-timeline-dot {
+  @apply w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+         border-2 transition-colors duration-200;
+}
+
+.order-timeline-step.completed .order-timeline-dot {
+  @apply bg-brand-accent border-brand-accent text-white;
+}
+
+.order-timeline-step.current .order-timeline-dot {
+  @apply bg-brand border-brand text-white;
+}
+
+.order-timeline-step.upcoming .order-timeline-dot {
+  @apply bg-gray-100 border-gray-200 text-gray-400;
+}
+
+.order-timeline-pulse {
+  @apply w-2.5 h-2.5 rounded-full bg-white animate-pulse;
+}
+
+.order-timeline-line {
+  @apply w-0.5 flex-1 mt-1 bg-gray-200 min-h-[24px];
+}
+
+.order-timeline-line.completed {
+  @apply bg-brand-accent;
+}
+
+.order-timeline-content {
+  @apply pt-1;
+}
+
+.order-timeline-label {
+  @apply font-medium text-brand-dark;
+}
+
+.order-timeline-step.upcoming .order-timeline-label {
+  @apply text-gray-400;
+}
+
+.order-timeline-description {
+  @apply text-sm text-gray-500 mt-0.5;
+}
+
+.order-timeline-step.upcoming .order-timeline-description {
+  @apply text-gray-300;
+}
+
+.order-timeline-date {
+  @apply text-xs text-brand mt-1;
+}
+
+/* Tracking Info */
+.order-tracking-info {
+  @apply flex items-start gap-3 p-4 rounded-lg bg-brand-light;
+}
+
+/* Order Items */
+.order-detail-items {
+  @apply divide-y divide-gray-100;
+}
+
+.order-detail-item {
+  @apply flex gap-4 py-4 first:pt-0 last:pb-0;
+}
+
+.order-detail-item-image {
+  @apply w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0;
+}
+
+.order-detail-item-placeholder {
+  @apply w-full h-full flex items-center justify-center text-gray-300;
+}
+
+.order-detail-item-placeholder svg {
+  @apply w-8 h-8;
+}
+
+.order-detail-item-info {
+  @apply flex-1 min-w-0;
+}
+
+.order-detail-item-name {
+  @apply font-medium text-brand-dark hover:text-brand transition-colors duration-200 line-clamp-2;
+}
+
+.order-detail-item-meta {
+  @apply flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-500;
+}
+
+.order-detail-item-qty {
+  @apply text-sm text-gray-600 mt-1;
+}
+
+.order-detail-item-price {
+  @apply text-right flex-shrink-0;
+}
+
+.order-detail-item-line-total {
+  @apply font-medium text-brand-dark block;
+}
+
+.order-detail-item-unit-price {
+  @apply text-xs text-gray-400 block mt-0.5;
+}
+
+/* Shipping Address */
+.order-detail-address {
+  @apply text-sm text-gray-600 leading-relaxed;
+}
+
+/* Payment Info */
+.order-detail-payment {
+  @apply space-y-4;
+}
+
+.order-detail-payment-method {
+  @apply flex items-center gap-3;
+}
+
+.order-detail-payment-status {
+  @apply flex items-center pt-3 border-t border-gray-100;
+}
+
+/* Order Summary (Pricing) */
+.order-detail-summary {
+  @apply space-y-3;
+}
+
+.order-detail-summary-row {
+  @apply flex items-center justify-between text-sm text-gray-600;
+}
+
+.order-detail-summary-row.discount {
+  @apply text-brand-accent;
+}
+
+.order-detail-summary-total {
+  @apply flex items-center justify-between pt-3 mt-3 border-t border-gray-200
+         text-lg font-medium text-brand-dark;
+}
+
+/* Mobile Responsive for Order Detail */
+@media (max-width: 640px) {
+  .order-detail-item {
+    @apply flex-wrap;
+  }
+
+  .order-detail-item-price {
+    @apply w-full text-left mt-2 pt-2 border-t border-gray-50;
+  }
+
+  .order-detail-grid {
+    @apply gap-4;
+  }
+}
+
+/* ==============================================
+ * Account Settings Page Styles
+ * ============================================== */
+
+/* Settings Card */
+.settings-card {
+  @apply bg-white rounded-xl shadow-sm p-6 mb-4;
+}
+
+.settings-card.danger {
+  @apply border border-red-200;
+}
+
+.settings-card-header {
+  @apply flex items-start gap-4 mb-6;
+}
+
+.settings-card-icon {
+  @apply w-10 h-10 rounded-full bg-brand-light flex items-center justify-center flex-shrink-0 text-brand-dark;
+}
+
+.settings-card-icon.danger {
+  @apply bg-red-50 text-red-500;
+}
+
+.settings-card-title {
+  @apply text-lg font-serif text-brand-dark;
+}
+
+.settings-card-title.danger {
+  @apply text-red-600;
+}
+
+.settings-card-subtitle {
+  @apply text-sm text-gray-500 mt-0.5;
+}
+
+/* Settings Form */
+.settings-form {
+  @apply space-y-5;
+}
+
+.settings-form-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-5;
+}
+
+.settings-form-stack {
+  @apply space-y-5 max-w-md;
+}
+
+.settings-form-actions {
+  @apply pt-2;
+}
+
+.settings-save-btn {
+  @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand text-white
+         font-medium rounded-full hover:bg-brand-dark transition-colors duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed text-sm;
+}
+
+/* Settings Messages */
+.settings-message {
+  @apply px-4 py-3 rounded-lg text-sm mt-4;
+}
+
+.settings-message.success {
+  @apply bg-brand-accent/20 text-green-700 border border-brand-accent/30;
+}
+
+.settings-message.error {
+  @apply bg-red-50 text-red-600 border border-red-200;
+}
+
+/* Settings Toggle */
+.settings-preference-list {
+  @apply divide-y divide-gray-100;
+}
+
+.settings-preference-item {
+  @apply flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0;
+}
+
+.settings-preference-info {
+  @apply flex-1;
+}
+
+.settings-preference-label {
+  @apply text-sm font-medium text-brand-dark;
+}
+
+.settings-preference-description {
+  @apply text-xs text-gray-500 mt-0.5;
+}
+
+.settings-toggle {
+  @apply relative inline-flex items-center cursor-pointer flex-shrink-0;
+}
+
+.settings-toggle.disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.settings-toggle input {
+  @apply sr-only;
+}
+
+.settings-toggle-slider {
+  @apply w-11 h-6 bg-gray-200 rounded-full
+         after:content-[''] after:absolute after:top-0.5 after:left-0.5
+         after:bg-white after:rounded-full after:h-5 after:w-5
+         after:transition-transform after:duration-200 after:shadow-sm;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider {
+  @apply bg-brand-accent;
+}
+
+.settings-toggle input:checked + .settings-toggle-slider::after {
+  transform: translateX(1.25rem);
+}
+
+.settings-toggle-required {
+  @apply ml-2 text-xs text-gray-400;
+}
+
+/* Danger Zone */
+.settings-danger-content {
+  @apply space-y-4;
+}
+
+.settings-danger-item {
+  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-red-50/50;
+}
+
+.settings-danger-label {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.settings-danger-description {
+  @apply text-xs text-gray-500 mt-0.5;
+}
+
+.settings-danger-btn {
+  @apply px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300
+         rounded-full hover:bg-red-50 hover:border-red-400 transition-colors duration-200
+         flex-shrink-0;
+}
+
+/* Delete Confirmation Modal */
+.settings-modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4;
+}
+
+.settings-modal {
+  @apply bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center;
+}
+
+.settings-modal-icon {
+  @apply flex justify-center mb-4;
+}
+
+.settings-modal-title {
+  @apply text-xl font-serif text-gray-900 mb-2;
+}
+
+.settings-modal-description {
+  @apply text-sm text-gray-500 mb-4;
+}
+
+.settings-modal-confirm-text {
+  @apply text-sm text-gray-700 mb-2 text-left;
+}
+
+.settings-modal-actions {
+  @apply flex gap-3 mt-5;
+}
+
+.settings-modal-cancel {
+  @apply flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100
+         rounded-full hover:bg-gray-200 transition-colors duration-200;
+}
+
+.settings-modal-confirm {
+  @apply flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium
+         text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}

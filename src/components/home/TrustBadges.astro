@@ -1,0 +1,45 @@
+---
+// 📍 src/components/home/TrustBadges.astro
+// 信任徽章组件 - 展示品牌可信度指标
+
+import { siteSettings } from '@/config/site-settings';
+
+// 从 site-settings 获取信任徽章数据
+const badges = siteSettings.copy.trustBadges || [
+  { icon: '🌍', text: 'Worldwide Shipping' },
+  { icon: '⭐', text: '8 Years Experience' },
+  { icon: '🔒', text: 'Secure Checkout' },
+];
+---
+
+<section
+  class="bg-brand-light py-8 md:py-12"
+  data-component="trust-badges"
+  aria-label="Trust badges"
+>
+  <div class="container mx-auto px-4">
+    <div class="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12">
+      {badges.map((badge) => (
+        <div class="flex items-center gap-3 text-brand-dark">
+          <span
+            class="text-3xl md:text-4xl flex-shrink-0"
+            aria-hidden="true"
+          >
+            {badge.icon}
+          </span>
+          <span class="font-medium text-base md:text-lg whitespace-nowrap">
+            {badge.text}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 悬停效果 - 可选 */
+  [data-component="trust-badges"] > div > div > div:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+  }
+</style>

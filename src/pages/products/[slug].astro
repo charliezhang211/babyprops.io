@@ -1,0 +1,246 @@
+---
+/**
+ * Product Detail Page (PDP)
+ *
+ * Features:
+ * - Dynamic product page generation via getStaticPaths
+ * - Product gallery with lightbox
+ * - Product information (title, price, specs, badges)
+ * - Tabbed content (description, specifications, care, shipping)
+ * - Related products carousel
+ * - Schema.org Product structured data
+ * - SEO metadata
+ *
+ * @see CLAUDE.md Section 6.3 (PDP Structure)
+ * @see TASKS.md Task-4.5
+ */
+
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Gallery from '@/components/pdp/Gallery.astro';
+import ProductInfo from '@/components/pdp/ProductInfo.astro';
+import RelatedProducts from '@/components/pdp/RelatedProducts.astro';
+import Configurator from '@/components/pdp/Configurator.tsx';
+import ProductReviewsSection from '@/components/reviews/ProductReviewsSection';
+import { siteSettings } from '@/config/site-settings';
+import { getCategoryBySlug } from '@/config/categories';
+
+// Type definition
+type Product = CollectionEntry<'products'>;
+
+// Enable pre-rendering for this page in hybrid mode
+export const prerender = true;
+
+// Generate static paths for all products
+export async function getStaticPaths() {
+  const products = await getCollection('products');
+
+  return products.map((product) => ({
+    params: { slug: product.data.slug },
+    props: { product },
+  }));
+}
+
+// Get product data
+const { product } = Astro.props as { product: Product };
+const { data } = product;
+const { Content } = await render(product);
+
+// Get category information
+const category = getCategoryBySlug(data.category);
+
+// Build gallery images array
+const galleryImages = [
+  data.featured_image,
+  ...(data.gallery || []),
+];
+
+// Build breadcrumb trail
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: 'Shop', href: '/shop' },
+  { label: category?.name || data.category, href: `/shop/${data.category}` },
+  { label: data.title, href: '' },
+];
+
+// Short description for Specifications section (customizable per product MD)
+const shortDescription = data.short_description;
+
+// Build product variants for Configurator
+const variants = data.variants || [];
+
+// SEO Metadata
+const pageTitle = data.meta_title || `${data.title} | Newborn Photography Props | ${siteSettings.siteName}`;
+const pageDescription = data.meta_description || `Buy ${data.title} at ${siteSettings.siteName}. Perfect for newborn photoshoots. ${data.material ? `High quality ${data.material}` : 'Premium quality'}, ${data.color_family ? `available in ${data.color_family}` : 'beautiful design'}. Worldwide shipping.`;
+const pageUrl = `${siteSettings.siteUrl}/products/${data.slug}`;
+const pageImage = data.featured_image.startsWith('http')
+  ? data.featured_image
+  : `${siteSettings.siteUrl}${data.featured_image}`;
+
+// Schema.org Product structured data
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": data.title,
+  "image": galleryImages.map(img =>
+    img.startsWith('http') ? img : `${siteSettings.siteUrl}${img}`
+  ),
+  "description": pageDescription,
+  "sku": data.sku_prefix,
+  "brand": {
+    "@type": "Brand",
+    "name": siteSettings.siteName
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": pageUrl,
+    "priceCurrency": siteSettings.currency,
+    "price": data.basePrice.toFixed(2),
+    "availability": data.in_stock
+      ? "https://schema.org/InStock"
+      : "https://schema.org/OutOfStock",
+    "seller": {
+      "@type": "Organization",
+      "name": siteSettings.siteName
+    }
+  },
+  "category": category?.name || data.category,
+  ...(data.material && { "material": data.material }),
+  ...(data.color_family && { "color": data.color_family }),
+};
+
+// Breadcrumb Schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.slice(0, -1).map((crumb, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": crumb.label,
+    "item": `${siteSettings.siteUrl}${crumb.href}`
+  }))
+};
+
+const meta = {
+  title: pageTitle,
+  description: pageDescription,
+  image: pageImage,
+  url: pageUrl,
+  type: 'product' as const,
+};
+---
+
+<BaseLayout {meta}>
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json" set:html={JSON.stringify(productSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+  <main class="bg-brand-light/30 py-8">
+    <div class="container mx-auto px-4 max-w-7xl">
+      <!-- Breadcrumb -->
+      <nav aria-label="Breadcrumb" class="mb-6">
+        <ol class="flex flex-wrap items-center gap-2 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <li class="flex items-center gap-2">
+              {index > 0 && (
+                <span class="text-gray-400" aria-hidden="true">/</span>
+              )}
+              {crumb.href ? (
+                <a
+                  href={crumb.href}
+                  class="text-brand hover:text-brand-dark transition-colors"
+                >
+                  {crumb.label}
+                </a>
+              ) : (
+                <span class="text-gray-600 font-medium">{crumb.label}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <!-- Product Main Section -->
+      <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+        <!-- Left Column: Gallery -->
+        <div>
+          <Gallery images={galleryImages} productName={data.title} />
+        </div>
+
+        <!-- Right Column: Product Info & Actions -->
+        <div class="space-y-6">
+          <ProductInfo
+            title={data.title}
+            sku={data.sku_prefix}
+            price={data.basePrice}
+            material={data.material}
+            colorFamily={data.color_family}
+            propSize={data.prop_size}
+            isHandmade={data.is_handmade}
+            isNew={data.is_new}
+            inStock={data.in_stock}
+          >
+            <!-- Actions Slot: Add to Cart Configurator -->
+            <div slot="actions" class="mt-6">
+              <Configurator
+                client:load
+                productSlug={data.slug}
+                productName={data.title}
+                basePrice={data.basePrice}
+                productImage={data.featured_image}
+                skuPrefix={data.sku_prefix}
+                variants={variants}
+              />
+            </div>
+          </ProductInfo>
+        </div>
+      </div>
+
+      <!-- Product Details Tabs -->
+      <div class="bg-white rounded-lg shadow-sm p-6 lg:p-8 mb-16">
+        <!-- Description Section -->
+        <div class="prose prose-brand max-w-none mb-8">
+          <h3 class="text-xl font-serif text-brand-dark mb-4">Description</h3>
+          <div class="text-gray-700 leading-relaxed">
+            <Content />
+          </div>
+        </div>
+
+        <!-- Specifications Section (custom per product MD) -->
+        {shortDescription && (
+          <div class="mb-8">
+            <h3 class="text-xl font-serif text-brand-dark mb-4">Specifications</h3>
+            <p class="text-gray-700 leading-relaxed">{shortDescription}</p>
+          </div>
+        )}
+
+        <!-- Care Instructions -->
+        {data.care_instructions && data.care_instructions.length > 0 && (
+          <div class="mb-8">
+            <h3 class="text-xl font-serif text-brand-dark mb-4">Care Instructions</h3>
+            <ul class="space-y-2">
+              {data.care_instructions.map(instruction => (
+                <li class="flex items-start">
+                  <span class="text-brand mr-2">•</span>
+                  <span class="text-gray-700">{instruction}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <!-- Reviews Section -->
+      <section class="mb-16" aria-labelledby="reviews-heading">
+        <ProductReviewsSection
+          client:visible
+          productSlug={data.slug}
+          productName={data.title}
+        />
+      </section>
+
+      <!-- Related Products -->
+      <RelatedProducts currentProduct={product} />
+    </div>
+  </main>
+</BaseLayout>

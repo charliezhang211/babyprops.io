@@ -1,0 +1,171 @@
+---
+/**
+ * ProductInfo Component
+ *
+ * Displays core product information including:
+ * - Title, Price, SKU
+ * - Photography props specific fields (material, color, size)
+ * - Handmade badge
+ * - Stock status
+ * - Trust badges
+ *
+ * @component
+ * @example
+ * ```astro
+ * <ProductInfo
+ *   title="Wooden Moon Bed"
+ *   price={89.99}
+ *   sku="WMB001"
+ *   material="Natural Pine Wood"
+ *   colorFamily="Natural Wood"
+ *   propSize="Newborn (0-1M)"
+ *   isHandmade={true}
+ *   inStock={true}
+ *   isNew={true}
+ * />
+ * ```
+ */
+
+import Badge from '@/components/ui/Badge.astro';
+import { siteSettings } from '@/config/site-settings';
+
+interface Props {
+  title: string;
+  price: number;
+  sku: string;
+  material?: string;
+  colorFamily?: string;
+  propSize?: string;
+  isHandmade?: boolean;
+  inStock?: boolean;
+  isNew?: boolean;
+}
+
+const {
+  title,
+  price,
+  sku,
+  material,
+  colorFamily,
+  propSize,
+  isHandmade = false,
+  inStock = true,
+  isNew = false,
+} = Astro.props;
+
+// Format price
+const formattedPrice = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: siteSettings.currency,
+}).format(price);
+---
+
+<div class="product-info" data-pdp="info">
+  <!-- Status Badges -->
+  {(isNew || !inStock || isHandmade) && (
+    <div class="flex gap-2 mb-4">
+      {isNew && <Badge variant="new">New</Badge>}
+      {!inStock && <Badge variant="sale">Out of Stock</Badge>}
+      {isHandmade && (
+        <Badge variant="default">
+          <span class="mr-1">✨</span>
+          Handmade
+        </Badge>
+      )}
+    </div>
+  )}
+
+  <!-- Product Title -->
+  <h1 class="text-3xl md:text-4xl font-serif text-brand-dark mb-3">
+    {title}
+  </h1>
+
+  <!-- Price -->
+  <div class="mb-6">
+    <span class="text-4xl font-bold text-brand" data-pdp="price">
+      {formattedPrice}
+    </span>
+  </div>
+
+  <!-- SKU -->
+  <div class="text-sm text-gray-600 mb-6">
+    SKU: <span class="font-medium text-gray-800">{sku}</span>
+  </div>
+
+  <!-- Photography Props Specific Fields -->
+  {(material || colorFamily || propSize) && (
+    <div class="border-t border-b border-brand-light py-6 mb-6 space-y-4">
+      <h3 class="text-sm font-semibold text-brand-dark uppercase tracking-wider mb-3">
+        Product Specifications
+      </h3>
+
+      <div class="grid gap-3">
+        {material && (
+          <div class="flex items-start">
+            <span class="text-brand mr-3 text-lg" aria-hidden="true">🧵</span>
+            <div>
+              <span class="text-sm text-gray-600 block">Material</span>
+              <span class="font-medium text-brand-dark">{material}</span>
+            </div>
+          </div>
+        )}
+
+        {colorFamily && (
+          <div class="flex items-start">
+            <span class="text-brand mr-3 text-lg" aria-hidden="true">🎨</span>
+            <div>
+              <span class="text-sm text-gray-600 block">Color Family</span>
+              <span class="font-medium text-brand-dark">{colorFamily}</span>
+            </div>
+          </div>
+        )}
+
+        {propSize && (
+          <div class="flex items-start">
+            <span class="text-brand mr-3 text-lg" aria-hidden="true">📏</span>
+            <div>
+              <span class="text-sm text-gray-600 block">Suitable For</span>
+              <span class="font-medium text-brand-dark">{propSize}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+
+
+  <!-- Stock Warning -->
+  {!inStock && (
+    <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div class="flex items-start">
+        <span class="text-red-500 mr-2 text-xl" aria-hidden="true">⚠️</span>
+        <div>
+          <p class="text-red-800 font-medium">Currently Out of Stock</p>
+          <p class="text-red-700 text-sm mt-1">
+            Contact us for restock information via
+            <a
+              href={siteSettings.contact.whatsappUrl}
+              class="underline hover:text-red-900"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Slot for Add to Cart / Buy Now buttons -->
+  <div class="mt-6">
+    <slot name="actions" />
+  </div>
+</div>
+
+<style>
+  /* Component-specific styles if needed */
+  .product-info {
+    /* Inherits from global Tailwind classes */
+  }
+</style>

@@ -1,0 +1,131 @@
+---
+// 📍 src/components/gallery/GalleryGrid.astro
+// 买家秀瀑布流网格组件
+
+import GalleryItem from './GalleryItem.astro';
+
+export interface GalleryImage {
+  image: string;
+  photographer?: string;
+  location?: string;
+}
+
+interface Props {
+  images: GalleryImage[];
+  columns?: 2 | 3 | 4;
+  emptyMessage?: string;
+}
+
+const {
+  images,
+  columns = 4,
+  emptyMessage = 'No photos yet. Be the first to share your work!',
+} = Astro.props;
+
+// 列数类名映射
+const columnClasses = {
+  2: 'sm:columns-2',
+  3: 'sm:columns-2 lg:columns-3',
+  4: 'sm:columns-2 lg:columns-3 xl:columns-4',
+};
+
+const columnClass = columnClasses[columns];
+---
+
+<div class="gallery-grid-wrapper" data-component="gallery-grid">
+  {images.length > 0 ? (
+    <div
+      class={`gallery-masonry columns-1 ${columnClass} gap-4`}
+      data-gallery-count={images.length}
+    >
+      {images.map((item, index) => (
+        <GalleryItem
+          image={item.image}
+          photographer={item.photographer}
+          location={item.location}
+          index={index}
+        />
+      ))}
+    </div>
+  ) : (
+    <!-- 空状态 -->
+    <div class="empty-state text-center py-16 px-4">
+      <div class="max-w-md mx-auto">
+        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-brand-light flex items-center justify-center">
+          <svg class="w-10 h-10 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-serif text-brand-dark mb-3">
+          No Photos Yet
+        </h3>
+        <p class="text-gray-600 mb-6">
+          {emptyMessage}
+        </p>
+        <a
+          href="/contact"
+          class="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-full hover:bg-brand-dark transition-colors font-medium"
+        >
+          Submit Your Photos
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  )}
+</div>
+
+<style>
+  /* Masonry 瀑布流样式 */
+  .gallery-masonry {
+    column-gap: 1rem;
+  }
+
+  /* 防止分栏截断 */
+  .gallery-masonry > * {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* 网格淡入动画 */
+  .gallery-masonry {
+    animation: fadeIn 0.6s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 响应式优化 */
+  @media (max-width: 640px) {
+    .gallery-masonry {
+      column-gap: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  // 客户端交互: 点击图片触发 Lightbox (在 Task-5.2 中实现)
+  document.addEventListener('DOMContentLoaded', () => {
+    const galleryItems = document.querySelectorAll('[data-gallery-item]');
+
+    galleryItems.forEach((item) => {
+      item.addEventListener('click', (e) => {
+        const index = item.getAttribute('data-index');
+        // 触发自定义事件,供 Lightbox 组件监听
+        const event = new CustomEvent('gallery:open', {
+          detail: { index: parseInt(index || '0', 10) },
+        });
+        window.dispatchEvent(event);
+      });
+    });
+  });
+</script>

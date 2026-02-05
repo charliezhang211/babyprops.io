@@ -1,0 +1,122 @@
+---
+// 📍 src/components/home/HeroSection.astro
+// HeroSection 组件 - 首页全屏英雄区块
+
+import { siteSettings } from '@/config/site-settings';
+
+// 从 site-settings 获取文案
+const { heroTitle, heroSubtitle, heroDescription, ctaText } = siteSettings.copy;
+---
+
+<section
+  class="hero-section relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden"
+  data-component="hero-section"
+>
+  <!-- 背景图层 -->
+  <!-- TODO: 替换为实际的产品背景图 public/images/brand/hero-bg.webp -->
+  <div class="absolute inset-0 bg-brand-light">
+    <!-- 临时渐变背景 - 上线前需替换为实际产品图片 -->
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-brand-light via-brand/10 to-brand-accent/20"
+      style="background-image: url('/images/brand/hero-bg.webp'); background-size: cover; background-position: center;"
+    ></div>
+  </div>
+
+  <!-- 渐变蒙版 - 确保文字可读性 -->
+  <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40"></div>
+
+  <!-- 内容层 -->
+  <div class="relative z-10 container mx-auto px-4 text-center max-w-4xl">
+    <!-- 主标题 -->
+    <h1 class="hero-title text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-4 drop-shadow-lg">
+      {heroTitle}
+    </h1>
+
+    <!-- 副标题 -->
+    <p class="hero-subtitle text-2xl md:text-3xl lg:text-4xl font-light text-white/95 mb-3 drop-shadow-md">
+      {heroSubtitle}
+    </p>
+
+    <!-- 描述文字 -->
+    <p class="hero-description text-base md:text-lg lg:text-xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-md">
+      {heroDescription}
+    </p>
+
+    <!-- CTA 按钮 -->
+    <a
+      href="/shop"
+      class="btn-primary inline-block text-lg px-8 py-4 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
+    >
+      {ctaText}
+    </a>
+
+    <!-- 信任徽章 (可选) -->
+    <div class="mt-12 flex flex-wrap justify-center gap-6 text-white/80 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🌍</span>
+        <span>Worldwide Shipping</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xl">⭐</span>
+        <span>8 Years Experience</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🔒</span>
+        <span>Secure Checkout</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 向下滚动提示 (可选) -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+    <a href="#categories" class="block text-white/70 hover:text-white transition-colors animate-bounce">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<style>
+  /* 响应式优化 */
+  @media (max-width: 768px) {
+    .hero-section {
+      min-height: 500px;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.5rem;
+    }
+
+    .hero-description {
+      font-size: 1rem;
+    }
+  }
+
+  /* 文字阴影优化 */
+  .drop-shadow-lg {
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .drop-shadow-md {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 动画优化 */
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-bounce {
+    animation: bounce 2s infinite;
+  }
+</style>

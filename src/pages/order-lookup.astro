@@ -1,0 +1,592 @@
+---
+/**
+ * Guest Order Lookup Page
+ * Allows unauthenticated users to check their order status
+ * by entering order number + email address.
+ *
+ * @see CLAUDE.md Section 6.4 - Guest Order Lookup
+ * @see TASKS.md Task-7B.7
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const L = siteSettings.orderLookup;
+
+const meta = {
+  title: `${L.pageTitle} | ${siteSettings.siteName}`,
+  description: 'Track your order status. Enter your order number and email to view shipping updates and order details.',
+};
+
+const breadcrumbItems = [
+  { label: 'Track Order', href: '/order-lookup/' },
+];
+---
+
+<BaseLayout {meta}>
+  <main class="min-h-[70vh] bg-gradient-to-b from-brand-light/50 to-white">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+      <!-- Breadcrumb -->
+      <div class="mb-6">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
+
+      <div class="max-w-xl mx-auto">
+        <!-- Page Header -->
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-brand/10 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-serif font-bold text-brand-dark mb-2">
+            {L.heroTitle}
+          </h1>
+          <p class="text-gray-600 max-w-md mx-auto">
+            {L.heroSubtitle}
+          </p>
+        </div>
+
+        <!-- Lookup Form Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div class="px-6 py-6 md:px-8 md:py-8">
+            <form id="lookup-form" class="space-y-5">
+              <!-- Order Number -->
+              <div>
+                <label for="order_number" class="block text-sm font-medium text-brand-dark mb-1.5">
+                  {L.orderNumberLabel}
+                </label>
+                <input
+                  type="text"
+                  id="order_number"
+                  name="order_number"
+                  placeholder={L.orderNumberPlaceholder}
+                  required
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label for="lookup_email" class="block text-sm font-medium text-brand-dark mb-1.5">
+                  {L.emailLabel}
+                </label>
+                <input
+                  type="email"
+                  id="lookup_email"
+                  name="email"
+                  placeholder={L.emailPlaceholder}
+                  required
+                  class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+                  autocomplete="email"
+                />
+              </div>
+
+              <!-- Error Message -->
+              <div id="lookup-error" class="hidden p-4 bg-red-50 border border-red-100 rounded-xl">
+                <div class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  <div>
+                    <p class="text-sm font-medium text-red-800" id="lookup-error-title">{L.notFoundTitle}</p>
+                    <p class="text-sm text-red-600 mt-0.5" id="lookup-error-message">{L.notFoundMessage}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                type="submit"
+                id="lookup-submit"
+                class="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-brand text-white font-medium rounded-full hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="btn-text flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                  {L.submitButton}
+                </span>
+                <span class="btn-loading hidden flex items-center gap-2">
+                  <span class="auth-spinner"></span>
+                  {L.loadingButton}
+                </span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Order Result (hidden by default, shown after successful lookup) -->
+        <div id="order-result" class="hidden mt-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <!-- Order Header -->
+          <div class="px-6 py-5 md:px-8 bg-brand-accent/10 border-b border-brand-accent/20">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p class="text-sm text-gray-500">Order Number</p>
+                <p id="result-order-number" class="text-lg font-mono font-bold text-brand-dark"></p>
+              </div>
+              <span id="result-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"></span>
+            </div>
+            <p id="result-date" class="text-sm text-gray-500 mt-1"></p>
+          </div>
+
+          <!-- Status Timeline -->
+          <div id="result-timeline" class="px-6 py-5 md:px-8 border-b border-gray-100">
+            <h3 class="text-sm font-semibold text-brand-dark mb-4">Order Progress</h3>
+            <div class="flex items-center justify-between">
+              <div class="order-lookup-step" data-step="pending">
+                <div class="order-lookup-dot"></div>
+                <span class="order-lookup-label">Placed</span>
+              </div>
+              <div class="order-lookup-line" data-line="pending"></div>
+              <div class="order-lookup-step" data-step="processing">
+                <div class="order-lookup-dot"></div>
+                <span class="order-lookup-label">Processing</span>
+              </div>
+              <div class="order-lookup-line" data-line="processing"></div>
+              <div class="order-lookup-step" data-step="shipped">
+                <div class="order-lookup-dot"></div>
+                <span class="order-lookup-label">Shipped</span>
+              </div>
+              <div class="order-lookup-line" data-line="shipped"></div>
+              <div class="order-lookup-step" data-step="delivered">
+                <div class="order-lookup-dot"></div>
+                <span class="order-lookup-label">Delivered</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cancelled/Refunded Notice -->
+          <div id="result-cancelled-notice" class="hidden px-6 py-4 md:px-8 border-b border-gray-100">
+            <div class="flex items-start gap-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+              <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p id="result-cancelled-text" class="text-sm text-amber-800"></p>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div id="result-items" class="px-6 py-5 md:px-8 border-b border-gray-100">
+            <h3 class="text-sm font-semibold text-brand-dark mb-3">Items</h3>
+            <div id="result-items-list" class="space-y-3"></div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="px-6 py-5 md:px-8">
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span id="result-subtotal"></span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Shipping</span>
+                <span id="result-shipping"></span>
+              </div>
+              <div id="result-tax-row" class="hidden flex justify-between text-gray-600">
+                <span>Tax</span>
+                <span id="result-tax"></span>
+              </div>
+              <div id="result-discount-row" class="hidden flex justify-between text-brand-accent">
+                <span>Discount</span>
+                <span id="result-discount"></span>
+              </div>
+              <div class="flex justify-between font-bold text-brand-dark pt-2 border-t border-gray-100">
+                <span>Total</span>
+                <span id="result-total"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Text -->
+        <div class="mt-8 text-center">
+          <p class="text-sm text-gray-500">
+            {L.helpText}{' '}
+            <a
+              href={siteSettings.contact.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-green-600 hover:text-green-700 font-medium transition-colors"
+            >
+              WhatsApp
+            </a>
+            {' '}or{' '}
+            <a
+              href={`mailto:${siteSettings.contact.email}`}
+              class="text-brand hover:text-brand-dark font-medium transition-colors"
+            >
+              {siteSettings.contact.email}
+            </a>
+          </p>
+          <p class="text-sm text-gray-500 mt-3">
+            Have an account?{' '}
+            <a href="/auth/login/?redirect=/account/orders/" class="text-brand hover:text-brand-dark font-medium transition-colors">
+              Sign in
+            </a>
+            {' '}to view all your orders.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Order Lookup Form Handler
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('lookup-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('lookup-submit') as HTMLButtonElement;
+    const errorEl = document.getElementById('lookup-error');
+    const errorTitleEl = document.getElementById('lookup-error-title');
+    const errorMsgEl = document.getElementById('lookup-error-message');
+    const resultEl = document.getElementById('order-result');
+
+    if (!form) return;
+
+    // Pre-fill from URL params (e.g., from thank-you page link)
+    const params = new URLSearchParams(window.location.search);
+    const prefilledOrder = params.get('order');
+    const prefilledEmail = params.get('email');
+    if (prefilledOrder) {
+      (document.getElementById('order_number') as HTMLInputElement).value = prefilledOrder;
+    }
+    if (prefilledEmail) {
+      (document.getElementById('lookup_email') as HTMLInputElement).value = prefilledEmail;
+    }
+
+    function setLoading(loading: boolean) {
+      submitBtn.disabled = loading;
+      const textEl = submitBtn.querySelector('.btn-text') as HTMLElement;
+      const loadingEl = submitBtn.querySelector('.btn-loading') as HTMLElement;
+      if (loading) {
+        textEl?.classList.add('hidden');
+        loadingEl?.classList.remove('hidden');
+      } else {
+        textEl?.classList.remove('hidden');
+        loadingEl?.classList.add('hidden');
+      }
+    }
+
+    function showError(title: string, message: string) {
+      if (errorTitleEl) errorTitleEl.textContent = title;
+      if (errorMsgEl) errorMsgEl.textContent = message;
+      errorEl?.classList.remove('hidden');
+      resultEl?.classList.add('hidden');
+    }
+
+    function hideError() {
+      errorEl?.classList.add('hidden');
+    }
+
+    function formatCurrency(amount: number): string {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(amount);
+    }
+
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+
+    function getStatusColor(status: string): string {
+      const colors: Record<string, string> = {
+        pending: 'bg-amber-100 text-amber-700',
+        paid: 'bg-blue-100 text-blue-700',
+        processing: 'bg-blue-100 text-blue-700',
+        shipped: 'bg-purple-100 text-purple-700',
+        delivered: 'bg-green-100 text-green-700',
+        cancelled: 'bg-gray-100 text-gray-700',
+        refunded: 'bg-red-100 text-red-700',
+      };
+      return colors[status] || 'bg-gray-100 text-gray-700';
+    }
+
+    function formatStatus(status: string): string {
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    // Timeline step progression
+    const stepOrder = ['pending', 'processing', 'shipped', 'delivered'];
+
+    function updateTimeline(status: string) {
+      const isCancelled = status === 'cancelled' || status === 'refunded';
+      const timelineEl = document.getElementById('result-timeline');
+      const cancelledEl = document.getElementById('result-cancelled-notice');
+      const cancelledTextEl = document.getElementById('result-cancelled-text');
+
+      if (isCancelled) {
+        timelineEl?.classList.add('hidden');
+        cancelledEl?.classList.remove('hidden');
+        if (cancelledTextEl) {
+          cancelledTextEl.textContent = status === 'cancelled'
+            ? 'This order has been cancelled.'
+            : 'This order has been refunded. The refund should appear in your account within 5-10 business days.';
+        }
+        return;
+      }
+
+      timelineEl?.classList.remove('hidden');
+      cancelledEl?.classList.add('hidden');
+
+      // Map statuses to timeline steps
+      const statusToStep: Record<string, string> = {
+        pending: 'pending',
+        paid: 'processing',
+        processing: 'processing',
+        shipped: 'shipped',
+        delivered: 'delivered',
+      };
+      const currentStep = statusToStep[status] || 'pending';
+      const currentIndex = stepOrder.indexOf(currentStep);
+
+      // Update step dots
+      stepOrder.forEach((step, index) => {
+        const stepEl = document.querySelector(`[data-step="${step}"]`);
+        const dotEl = stepEl?.querySelector('.order-lookup-dot');
+        if (!stepEl || !dotEl) return;
+
+        dotEl.className = 'order-lookup-dot';
+        if (index < currentIndex) {
+          dotEl.classList.add('completed');
+        } else if (index === currentIndex) {
+          dotEl.classList.add('current');
+        }
+      });
+
+      // Update connector lines
+      stepOrder.forEach((step, index) => {
+        const lineEl = document.querySelector(`[data-line="${step}"]`) as HTMLElement;
+        if (!lineEl) return;
+        lineEl.className = 'order-lookup-line';
+        if (index < currentIndex) {
+          lineEl.classList.add('completed');
+        }
+      });
+    }
+
+    function renderItems(items: any[]) {
+      const listEl = document.getElementById('result-items-list');
+      if (!listEl) return;
+
+      listEl.innerHTML = items.map(item => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+          <div class="w-14 h-14 bg-white rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden">
+            ${item.image
+              ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" loading="lazy" />`
+              : `<div class="w-full h-full flex items-center justify-center text-gray-300">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                  </svg>
+                </div>`
+            }
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-brand-dark truncate">${item.name}</p>
+            <p class="text-xs text-gray-500">
+              SKU: ${item.sku}${item.variant ? ` · ${item.variant}` : ''}${item.color ? ` · ${item.color}` : ''}
+            </p>
+            <p class="text-xs text-gray-500">Qty: ${item.quantity}</p>
+          </div>
+          <div class="text-sm font-medium text-brand-dark flex-shrink-0">
+            ${formatCurrency(item.line_total)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showResult(data: any) {
+      const { order, items } = data;
+
+      // Order number
+      const orderNumEl = document.getElementById('result-order-number');
+      if (orderNumEl) orderNumEl.textContent = `#${order.order_number}`;
+
+      // Status badge
+      const statusEl = document.getElementById('result-status');
+      if (statusEl) {
+        statusEl.className = `inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`;
+        statusEl.textContent = formatStatus(order.status);
+      }
+
+      // Date
+      const dateEl = document.getElementById('result-date');
+      if (dateEl) dateEl.textContent = `Placed on ${formatDate(order.created_at)}`;
+
+      // Timeline
+      updateTimeline(order.status);
+
+      // Items
+      renderItems(items);
+
+      // Summary
+      const subtotalEl = document.getElementById('result-subtotal');
+      const shippingEl = document.getElementById('result-shipping');
+      const taxRowEl = document.getElementById('result-tax-row');
+      const taxEl = document.getElementById('result-tax');
+      const discountRowEl = document.getElementById('result-discount-row');
+      const discountEl = document.getElementById('result-discount');
+      const totalEl = document.getElementById('result-total');
+
+      if (subtotalEl) subtotalEl.textContent = formatCurrency(order.subtotal);
+      if (shippingEl) shippingEl.textContent = order.shipping_cost > 0 ? formatCurrency(order.shipping_cost) : 'FREE';
+      if (totalEl) totalEl.textContent = formatCurrency(order.total);
+
+      if (order.tax > 0) {
+        taxRowEl?.classList.remove('hidden');
+        if (taxEl) taxEl.textContent = formatCurrency(order.tax);
+      } else {
+        taxRowEl?.classList.add('hidden');
+      }
+
+      if (order.discount > 0) {
+        discountRowEl?.classList.remove('hidden');
+        if (discountEl) discountEl.textContent = `-${formatCurrency(order.discount)}`;
+      } else {
+        discountRowEl?.classList.add('hidden');
+      }
+
+      // Show result, hide error
+      resultEl?.classList.remove('hidden');
+      hideError();
+
+      // Scroll to result
+      resultEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Form submit handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const orderNumber = (document.getElementById('order_number') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('lookup_email') as HTMLInputElement).value.trim();
+
+      if (!orderNumber || !email) {
+        showError('Missing Information', 'Please enter both your order number and email address.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch('/api/order-lookup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_number: orderNumber, email }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          showResult(data);
+        } else if (response.status === 404) {
+          showError(
+            'Order Not Found',
+            "We couldn't find an order matching the details you provided. Please check your order number and email, then try again."
+          );
+          resultEl?.classList.add('hidden');
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          showError(
+            'Something Went Wrong',
+            errorData.error || 'An unexpected error occurred. Please try again later.'
+          );
+          resultEl?.classList.add('hidden');
+        }
+      } catch {
+        showError(
+          'Connection Error',
+          'Unable to connect to the server. Please check your internet connection and try again.'
+        );
+        resultEl?.classList.add('hidden');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Auto-submit if both fields are pre-filled
+    if (prefilledOrder && prefilledEmail) {
+      form.dispatchEvent(new Event('submit'));
+    }
+  });
+</script>
+
+<style>
+  /* Order Lookup Timeline Styles */
+  .order-lookup-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .order-lookup-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+  }
+
+  .order-lookup-dot.completed {
+    background-color: #B4C4A4;
+    border-color: #B4C4A4;
+  }
+
+  .order-lookup-dot.current {
+    background-color: #D4A5A5;
+    border-color: #D4A5A5;
+    box-shadow: 0 0 0 4px rgba(212, 165, 165, 0.2);
+  }
+
+  .order-lookup-label {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #9C8B7E;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .order-lookup-line {
+    flex: 1;
+    height: 2px;
+    background-color: #e5e7eb;
+    margin-top: -0.75rem;
+    transition: background-color 0.3s ease;
+  }
+
+  .order-lookup-line.completed {
+    background-color: #B4C4A4;
+  }
+
+  /* Auth spinner reuse */
+  .auth-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>

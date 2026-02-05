@@ -1,0 +1,427 @@
+---
+/**
+ * Order History Page
+ * Displays user's order history with filtering and pagination
+ */
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import AccountLayout from '@/components/account/AccountLayout.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import { siteSettings } from '@/config/site-settings';
+import { createServerSupabase } from '@/lib/supabase';
+import type { OrderRow, OrderItemRow } from '@/lib/supabase';
+
+// Pagination settings
+const ORDERS_PER_PAGE = 10;
+
+// Get URL params
+const url = new URL(Astro.request.url);
+const statusFilter = (url.searchParams.get('status') || 'all') as string;
+const currentPage = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
+
+// Get user session
+const supabase = createServerSupabase(Astro.cookies);
+const { data: { user } } = await supabase.auth.getUser();
+
+// Redirect to login if not authenticated
+if (!user) {
+  return Astro.redirect('/auth/login?redirect=/account/orders/');
+}
+
+// Build query with optional status filter
+let query = supabase
+  .from('orders')
+  .select('*', { count: 'exact' })
+  .eq('user_id', user.id)
+  .order('created_at', { ascending: false });
+
+// Apply status filter
+if (statusFilter !== 'all') {
+  query = query.eq('status', statusFilter);
+}
+
+// Apply pagination
+const { data: orders, count: totalOrders } = await query
+  .range((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE - 1);
+
+// Fetch order items for all orders
+let orderItems: OrderItemRow[] = [];
+if (orders && orders.length > 0) {
+  const orderIds = orders.map(o => o.id);
+  const { data: items } = await supabase
+    .from('order_items')
+    .select('*')
+    .in('order_id', orderIds);
+  orderItems = items || [];
+}
+
+// Calculate pagination
+const totalPages = Math.ceil((totalOrders || 0) / ORDERS_PER_PAGE);
+
+// Get order counts by status for filter badges
+const { count: processingCount } = await supabase
+  .from('orders')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id)
+  .in('status', ['pending', 'paid', 'processing']);
+
+const { count: shippedCount } = await supabase
+  .from('orders')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id)
+  .eq('status', 'shipped');
+
+const { count: deliveredCount } = await supabase
+  .from('orders')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', user.id)
+  .eq('status', 'delivered');
+
+// Status filter tabs configuration
+const statusTabs = [
+  { id: 'all', label: 'All Orders', count: totalOrders || 0 },
+  { id: 'processing', label: 'Processing', count: (processingCount || 0) },
+  { id: 'shipped', label: 'Shipped', count: (shippedCount || 0) },
+  { id: 'delivered', label: 'Delivered', count: (deliveredCount || 0) },
+];
+
+// Helper function to get status badge color
+function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    pending: 'bg-amber-100 text-amber-700',
+    paid: 'bg-blue-100 text-blue-700',
+    processing: 'bg-blue-100 text-blue-700',
+    shipped: 'bg-purple-100 text-purple-700',
+    delivered: 'bg-brand-accent/30 text-green-700',
+    cancelled: 'bg-gray-100 text-gray-700',
+    refunded: 'bg-red-100 text-red-700',
+  };
+  return colors[status] || 'bg-gray-100 text-gray-700';
+}
+
+// Helper function to format status
+function formatStatus(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+// Helper function to format date
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+// Helper function to format currency
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+}
+
+// Get order items by order id
+function getOrderItems(orderId: string): OrderItemRow[] {
+  return orderItems.filter(item => item.order_id === orderId);
+}
+
+// Generate pagination URL
+function getPaginationUrl(page: number): string {
+  const params = new URLSearchParams();
+  if (statusFilter !== 'all') params.set('status', statusFilter);
+  if (page > 1) params.set('page', page.toString());
+  const queryString = params.toString();
+  return `/account/orders/${queryString ? '?' + queryString : ''}`;
+}
+
+// Generate filter URL
+function getFilterUrl(status: string): string {
+  if (status === 'all') return '/account/orders/';
+  return `/account/orders/?status=${status}`;
+}
+
+// Generate page numbers array
+function getPageNumbers(): (number | string)[] {
+  const pages: (number | string)[] = [];
+  const maxVisible = 5;
+
+  if (totalPages <= maxVisible) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+
+    if (currentPage > 3) pages.push('...');
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) {
+      if (!pages.includes(i)) pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) pages.push('...');
+
+    if (!pages.includes(totalPages)) pages.push(totalPages);
+  }
+
+  return pages;
+}
+
+// SEO Meta
+const meta = {
+  title: `Order History | ${siteSettings.siteName}`,
+  description: 'View and track your orders.',
+  noindex: true,
+};
+
+// Breadcrumb items
+const breadcrumbItems = [
+  { label: 'Home', href: '/' },
+  { label: 'My Account', href: '/account/' },
+  { label: 'Order History', href: '/account/orders/' },
+];
+---
+
+<BaseLayout {meta}>
+  <div class="bg-brand-light min-h-screen py-8">
+    <div class="container mx-auto px-4">
+      <!-- Breadcrumb -->
+      <Breadcrumb items={breadcrumbItems} />
+
+      <!-- Account Layout with Sidebar -->
+      <AccountLayout user={user} currentPage="orders">
+        <!-- Page Header -->
+        <div class="account-welcome">
+          <h1 class="account-welcome-title">Order History</h1>
+          <p class="account-welcome-subtitle">
+            View and track all your orders. Click on an order to see full details.
+          </p>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div class="order-filter-tabs">
+          {statusTabs.map((tab) => (
+            <a
+              href={getFilterUrl(tab.id)}
+              class={`order-filter-tab ${statusFilter === tab.id ? 'active' : ''}`}
+            >
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span class="order-filter-count">{tab.count}</span>
+              )}
+            </a>
+          ))}
+        </div>
+
+        <!-- Orders List -->
+        {(!orders || orders.length === 0) ? (
+          <div class="account-empty-state">
+            <div class="account-empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                <line x1="9" y1="12" x2="15" y2="12"/>
+                <line x1="9" y1="16" x2="13" y2="16"/>
+              </svg>
+            </div>
+            <h3 class="account-empty-title">
+              {statusFilter === 'all' ? 'No orders yet' : `No ${formatStatus(statusFilter).toLowerCase()} orders`}
+            </h3>
+            <p class="account-empty-description">
+              {statusFilter === 'all'
+                ? 'When you place orders, they will appear here.'
+                : `You don't have any orders with "${formatStatus(statusFilter)}" status.`}
+            </p>
+            {statusFilter === 'all' ? (
+              <a href="/shop/" class="btn-primary inline-flex items-center gap-2 mt-4">
+                Start Shopping
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                  <path d="M5 12h14m-7-7l7 7-7 7"/>
+                </svg>
+              </a>
+            ) : (
+              <a href="/account/orders/" class="btn-secondary inline-flex items-center gap-2 mt-4">
+                View All Orders
+              </a>
+            )}
+          </div>
+        ) : (
+          <>
+            <!-- Order Count -->
+            <div class="order-results-info">
+              Showing {((currentPage - 1) * ORDERS_PER_PAGE) + 1}-{Math.min(currentPage * ORDERS_PER_PAGE, totalOrders || 0)} of {totalOrders} order{(totalOrders || 0) !== 1 ? 's' : ''}
+            </div>
+
+            <!-- Orders List -->
+            <div class="account-orders-list">
+              {orders.map((order: OrderRow) => {
+                const items = getOrderItems(order.id);
+                return (
+                  <a href={`/account/orders/${order.id}/`} class="account-order-card">
+                    <div class="account-order-header">
+                      <div class="account-order-info">
+                        <span class="account-order-number">#{order.order_number}</span>
+                        <span class="account-order-date">{formatDate(order.created_at)}</span>
+                      </div>
+                      <span class={`account-order-status ${getStatusColor(order.status)}`}>
+                        {formatStatus(order.status)}
+                      </span>
+                    </div>
+
+                    <div class="account-order-body">
+                      <!-- Product Thumbnails -->
+                      <div class="account-order-thumbnails">
+                        {items.slice(0, 3).map((item, index) => (
+                          <div class="account-order-thumb" style={`z-index: ${3 - index}`}>
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div class="account-order-thumb-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                                  <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {items.length > 3 && (
+                          <div class="account-order-thumb-more">
+                            +{items.length - 3}
+                          </div>
+                        )}
+                        {items.length === 0 && (
+                          <div class="account-order-thumb">
+                            <div class="account-order-thumb-placeholder">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <!-- Order Summary -->
+                      <div class="account-order-summary">
+                        <div class="account-order-items">
+                          {items.length} item{items.length !== 1 ? 's' : ''}
+                        </div>
+                        <div class="account-order-total">
+                          {formatCurrency(order.total)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="account-order-footer">
+                      <span class="account-order-view">
+                        View Details
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </span>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+
+            <!-- Pagination -->
+            {totalPages > 1 && (
+              <nav class="order-pagination" aria-label="Order pagination">
+                <!-- Previous -->
+                {currentPage > 1 ? (
+                  <a href={getPaginationUrl(currentPage - 1)} class="order-pagination-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                      <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    <span class="sr-only sm:not-sr-only">Previous</span>
+                  </a>
+                ) : (
+                  <span class="order-pagination-btn disabled">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                      <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    <span class="sr-only sm:not-sr-only">Previous</span>
+                  </span>
+                )}
+
+                <!-- Page Numbers -->
+                <div class="order-pagination-pages">
+                  {getPageNumbers().map((page) => (
+                    page === '...' ? (
+                      <span class="order-pagination-ellipsis">...</span>
+                    ) : (
+                      <a
+                        href={getPaginationUrl(page as number)}
+                        class={`order-pagination-page ${currentPage === page ? 'active' : ''}`}
+                      >
+                        {page}
+                      </a>
+                    )
+                  ))}
+                </div>
+
+                <!-- Next -->
+                {currentPage < totalPages ? (
+                  <a href={getPaginationUrl(currentPage + 1)} class="order-pagination-btn">
+                    <span class="sr-only sm:not-sr-only">Next</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </a>
+                ) : (
+                  <span class="order-pagination-btn disabled">
+                    <span class="sr-only sm:not-sr-only">Next</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </span>
+                )}
+              </nav>
+            )}
+          </>
+        )}
+
+        <!-- Need Help Section -->
+        <div class="account-help-card mt-8">
+          <div class="account-help-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="account-help-content">
+            <h3 class="account-help-title">Need Help with an Order?</h3>
+            <p class="account-help-description">
+              Contact us for order inquiries, tracking updates, or any questions about your purchase.
+            </p>
+          </div>
+          <div class="account-help-actions">
+            <a href={siteSettings.contact.whatsappUrl} target="_blank" rel="noopener noreferrer" class="account-help-btn whatsapp">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              WhatsApp
+            </a>
+            <a href={`mailto:${siteSettings.contact.email}`} class="account-help-btn email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Email Us
+            </a>
+          </div>
+        </div>
+      </AccountLayout>
+    </div>
+  </div>
+</BaseLayout>

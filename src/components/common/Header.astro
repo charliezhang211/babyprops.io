@@ -1,0 +1,261 @@
+---
+// Header Component
+import Icon from "./Icon.astro";
+import CartIcon from "@/components/commerce/CartIcon";
+import AuthButton from "@/components/auth/AuthButton";
+import { siteSettings } from "@/config/site-settings";
+
+const navItems = [
+    { label: "Shop All", href: "/shop/" },
+    { label: "Custom Letters", href: "/create-your-own/" },
+    { label: "Wholesale", href: "/wholesale/" },
+    { label: "About", href: "/about/" },
+];
+---
+
+<header class="header">
+    <div class="header-inner container">
+        <!-- Logo -->
+        <a href="/" class="logo">
+            <Icon name="checkeredFlag" size={28} class="logo-icon" />
+            <span class="logo-text">{siteSettings.siteName}</span>
+        </a>
+
+        <!-- Navigation -->
+        <nav class="nav" id="main-nav">
+            <ul class="nav-list">
+                {
+                    navItems.map((item) => (
+                        <li class="nav-item">
+                            <a href={item.href} class="nav-link">
+                                {item.label}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+
+        <!-- Actions -->
+        <div class="header-actions">
+            <AuthButton client:load />
+            <CartIcon client:load />
+
+            <!-- Mobile Menu Toggle -->
+            <button
+                class="mobile-toggle"
+                id="mobile-toggle"
+                aria-label="Toggle Menu"
+            >
+                <Icon name="menu" size={24} class="menu-icon" />
+                <Icon name="close" size={24} class="close-icon" />
+            </button>
+        </div>
+    </div>
+
+    <!-- Racing stripe decoration -->
+    <div class="header-stripe"></div>
+</header>
+
+<style>
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: rgba(17, 17, 17, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: var(--z-sticky);
+        border-bottom: 1px solid var(--asphalt);
+    }
+
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-family: var(--font-heading);
+        font-size: var(--text-2xl);
+        color: var(--pure-white);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .logo-icon {
+        color: var(--racing-red);
+    }
+
+    .logo-text {
+        background: var(--gradient-racing);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .nav-list {
+        display: flex;
+        list-style: none;
+        gap: var(--space-8);
+    }
+
+    .nav-link {
+        font-family: var(--font-heading);
+        font-size: var(--text-sm);
+        color: var(--silver);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: var(--space-2) var(--space-3);
+        position: relative;
+        transition: color var(--transition-fast);
+    }
+
+    .nav-link:hover {
+        color: var(--pure-white);
+    }
+
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--racing-red);
+        transition: width var(--transition-base);
+    }
+
+    .nav-link:hover::after {
+        width: 100%;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
+
+    .cart-toggle {
+        position: relative;
+        background: none;
+        border: none;
+        color: var(--pure-white);
+        cursor: pointer;
+        padding: var(--space-2);
+        transition: color var(--transition-fast);
+    }
+
+    .cart-toggle:hover {
+        color: var(--racing-red);
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: var(--racing-red);
+        color: var(--pure-white);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        width: 18px;
+        height: 18px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+
+    /* Cart icon animations */
+    .cart-bounce {
+        animation: cart-bounce 0.5s ease;
+    }
+
+    .count-pop {
+        animation: count-pop 0.4s ease;
+    }
+
+    @keyframes cart-bounce {
+        0%, 100% { transform: scale(1); }
+        25% { transform: scale(1.2); }
+        50% { transform: scale(0.95); }
+        75% { transform: scale(1.05); }
+    }
+
+    @keyframes count-pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    .mobile-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--space-2);
+        color: var(--pure-white);
+    }
+
+    .mobile-toggle .close-icon {
+        display: none;
+    }
+
+    .mobile-toggle.active .menu-icon {
+        display: none;
+    }
+
+    .mobile-toggle.active .close-icon {
+        display: block;
+    }
+
+    .header-stripe {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-racing);
+    }
+
+    @media (max-width: 768px) {
+        .nav {
+            position: absolute;
+            top: var(--header-height);
+            left: 0;
+            right: 0;
+            background: var(--carbon-gray);
+            padding: var(--space-4);
+            display: none;
+        }
+
+        .nav.active {
+            display: block;
+        }
+
+        .nav-list {
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .mobile-toggle {
+            display: block;
+        }
+    }
+</style>
+
+<script>
+    // Mobile navigation toggle
+    document.getElementById("mobile-toggle")?.addEventListener("click", (e) => {
+        const btn = e.currentTarget as HTMLElement;
+        btn?.classList.toggle("active");
+        document.getElementById("main-nav")?.classList.toggle("active");
+    });
+</script>

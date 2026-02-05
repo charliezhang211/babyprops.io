@@ -1,0 +1,24 @@
+---
+/**
+ * Cart Page - Shopping cart view
+ * @see CLAUDE.md Section 6 - Page Architecture
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import CartPage from '@/components/commerce/CartPage.tsx';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `${siteSettings.cart.pageTitle} | ${siteSettings.siteName}`,
+  description: 'Review your shopping cart and proceed to checkout.',
+  noindex: true,
+};
+---
+
+<BaseLayout {meta}>
+  <main class="container mx-auto px-4 py-8">
+    <CartPage client:load />
+  </main>
+</BaseLayout>

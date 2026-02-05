@@ -1,0 +1,360 @@
+---
+/**
+ * Category Page - 分类产品列表页
+ *
+ * 功能:
+ * - 按分类展示产品
+ * - 筛选 (颜色/材质/价格)
+ * - 排序
+ * - 分页 (每页 12 个)
+ * - 动态 SEO 优化
+ * - 静态路径生成 (SSG)
+ *
+ * @see CLAUDE.md Section 6.2
+ */
+
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import FilterSidebar from '@/components/plp/FilterSidebar';
+import SortDropdown from '@/components/plp/SortDropdown';
+import ProductGrid from '@/components/plp/ProductGrid.astro';
+import { siteSettings } from '@/config/site-settings';
+import { categories, getCategoryBySlug } from '@/config/categories';
+import {
+  filterProducts,
+  sortProducts,
+  paginateProducts,
+  getPriceRange,
+} from '@/lib/product-utils';
+import type { ColorFamilySlug } from '@/config/color-families';
+import type { MaterialSlug } from '@/config/materials';
+import type { SortOption } from '@/stores/filter';
+
+// 生成所有分类的静态路径
+export const getStaticPaths = (async () => {
+  return categories.map(category => ({
+    params: { category: category.slug },
+  }));
+}) satisfies GetStaticPaths;
+
+// 获取当前分类
+const { category: categorySlug } = Astro.params;
+const category = getCategoryBySlug(categorySlug);
+
+// 如果分类不存在, 返回 404
+if (!category) {
+  return Astro.redirect('/404');
+}
+
+// 获取该分类的所有产品 (只显示库存中的)
+const allCategoryProducts = await getCollection(
+  'products',
+  ({ data }) => data.category === categorySlug && data.in_stock
+);
+
+// 获取价格范围
+const [minPrice, maxPrice] = getPriceRange(allCategoryProducts);
+
+// 从 URL 参数获取筛选条件
+const url = new URL(Astro.request.url);
+
+// 解析颜色筛选 (?colors=pastel,cream)
+const colorsParam = url.searchParams.get('colors');
+const selectedColors = colorsParam
+  ? colorsParam.split(',').filter(Boolean) as ColorFamilySlug[]
+  : [];
+
+// 解析材质筛选 (?materials=wood,mohair)
+const materialsParam = url.searchParams.get('materials');
+const selectedMaterials = materialsParam
+  ? materialsParam.split(',').filter(Boolean) as MaterialSlug[]
+  : [];
+
+// 解析价格筛选 (?price=0-100)
+const priceParam = url.searchParams.get('price');
+let priceRange: [number, number] | undefined;
+if (priceParam) {
+  const [min, max] = priceParam.split('-').map(Number);
+  if (!isNaN(min) && !isNaN(max)) {
+    priceRange = [min, max];
+  }
+}
+
+// 解析排序 (?sort=price-asc)
+const sortParam = url.searchParams.get('sort');
+const sortOption = (sortParam as SortOption) || 'featured';
+
+// 解析页码 (?page=2)
+const pageParam = url.searchParams.get('page');
+const currentPage = Math.max(1, parseInt(pageParam || '1', 10));
+const pageSize = 12;
+
+// 应用筛选 (分类筛选已在查询时应用)
+const filteredProducts = filterProducts(allCategoryProducts, {
+  colors: selectedColors.length > 0 ? selectedColors : undefined,
+  materials: selectedMaterials.length > 0 ? selectedMaterials : undefined,
+  priceRange,
+  inStockOnly: true,
+});
+
+// 应用排序
+const sortedProducts = sortProducts(filteredProducts, sortOption);
+
+// 应用分页
+const paginatedResult = paginateProducts(sortedProducts, {
+  page: currentPage,
+  pageSize,
+});
+
+// 动态 SEO 元数据
+const meta = {
+  title: `${category.name} | Newborn Photography Props | ${siteSettings.siteName}`,
+  description: `Browse our ${category.name} collection. ${category.description}. Professional quality newborn photography props. Free shipping over $99.`,
+  url: `${siteSettings.siteUrl}/shop/${categorySlug}`,
+  type: 'website' as const,
+};
+
+// 面包屑结构化数据
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": siteSettings.siteUrl
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Shop",
+      "item": `${siteSettings.siteUrl}/shop`
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": category.name,
+      "item": `${siteSettings.siteUrl}/shop/${categorySlug}`
+    }
+  ]
+};
+
+// 构建分页 URL 的辅助函数
+const buildPageUrl = (page: number) => {
+  const params = new URLSearchParams();
+  params.set('page', page.toString());
+  if (colorsParam) params.set('colors', colorsParam);
+  if (materialsParam) params.set('materials', materialsParam);
+  if (priceParam) params.set('price', priceParam);
+  if (sortParam) params.set('sort', sortParam);
+  return `/shop/${categorySlug}?${params.toString()}`;
+};
+
+// 预计算分页显示逻辑
+const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) => {
+  const page = i + 1;
+  const isActive = page === currentPage;
+  const showPage =
+    page === 1 ||
+    page === paginatedResult.totalPages ||
+    Math.abs(page - currentPage) <= 1;
+
+  let type: 'active' | 'link' | 'ellipsis-prev' | 'ellipsis-next' | 'hidden' = 'link';
+
+  if (isActive) {
+    type = 'active';
+  } else if (!showPage && page === currentPage - 2) {
+    type = 'ellipsis-prev';
+  } else if (!showPage && page === currentPage + 2) {
+    type = 'ellipsis-next';
+  } else if (!showPage) {
+    type = 'hidden';
+  }
+
+  return {
+    page,
+    type,
+    url: buildPageUrl(page),
+  };
+}).filter(item => item.type !== 'hidden');
+---
+
+<BaseLayout {meta}>
+  <!-- Breadcrumb Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+  <div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-6">
+      <ol class="flex items-center gap-2 text-sm text-gray-600">
+        <li>
+          <a href="/" class="hover:text-brand transition-colors">Home</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a href="/shop" class="hover:text-brand transition-colors">Shop</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-brand-dark font-medium">
+          {category.name}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Page Header with Category Badge -->
+    <header class="mb-8">
+      <div class="flex items-start gap-3 mb-3">
+        <h1 class="text-3xl md:text-4xl font-serif text-brand-dark">
+          {category.name}
+        </h1>
+        {category.badge && (
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand text-white">
+            {category.badge}
+          </span>
+        )}
+      </div>
+      <p class="text-gray-600 max-w-2xl">
+        {category.description}. Handpicked with care for photographers worldwide.
+      </p>
+    </header>
+
+    <!-- Main Content: Sidebar + Product Grid -->
+    <div class="lg:grid lg:grid-cols-[280px,1fr] lg:gap-8">
+      <!-- Filter Sidebar (Desktop) -->
+      <aside class="hidden lg:block">
+        <FilterSidebar
+          client:load
+          mode="sidebar"
+          priceConfig={{ min: minPrice, max: maxPrice }}
+        />
+      </aside>
+
+      <!-- Product Grid Section -->
+      <div>
+        <!-- Toolbar: Results Count + Sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+          <!-- Results Count -->
+          <p class="text-sm text-gray-600">
+            {paginatedResult.totalItems === 0 ? (
+              <span>No products found in this category</span>
+            ) : (
+              <span>
+                Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> - <strong>{Math.min(currentPage * pageSize, paginatedResult.totalItems)}</strong> of <strong>{paginatedResult.totalItems}</strong> products
+              </span>
+            )}
+          </p>
+
+          <!-- Mobile Filter Button + Sort Dropdown -->
+          <div class="flex items-center gap-3">
+            <FilterSidebar
+              client:load
+              mode="drawer"
+              priceConfig={{ min: minPrice, max: maxPrice }}
+            />
+
+            <!-- Sort Dropdown -->
+            <SortDropdown client:load />
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <ProductGrid products={paginatedResult.data} />
+
+        <!-- Pagination -->
+        {paginatedResult.totalPages > 1 && (
+          <nav aria-label="Pagination" class="mt-12 flex justify-center">
+            <ul class="flex items-center gap-2">
+              <!-- Previous Button -->
+              {paginatedResult.hasPreviousPage ? (
+                <li>
+                  <a
+                    href={buildPageUrl(currentPage - 1)}
+                    class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </a>
+                </li>
+              ) : (
+                <li>
+                  <span class="px-4 py-2 border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                    Previous
+                  </span>
+                </li>
+              )}
+
+              <!-- Page Numbers -->
+              {pageNumbers.map((item) => {
+                if (item.type === 'ellipsis-prev' || item.type === 'ellipsis-next') {
+                  return (
+                    <li key={`ellipsis-${item.page}`}>
+                      <span class="px-3 py-2">...</span>
+                    </li>
+                  );
+                }
+
+                if (item.type === 'active') {
+                  return (
+                    <li key={`page-${item.page}`}>
+                      <span class="px-4 py-2 bg-brand text-white rounded font-medium" aria-current="page">
+                        {item.page}
+                      </span>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={`page-${item.page}`}>
+                    <a
+                      href={item.url}
+                      class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                      aria-label={`Go to page ${item.page}`}
+                    >
+                      {item.page}
+                    </a>
+                  </li>
+                );
+              })}
+
+              <!-- Next Button -->
+              {paginatedResult.hasNextPage ? (
+                <li>
+                  <a
+                    href={buildPageUrl(currentPage + 1)}
+                    class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    aria-label="Next page"
+                  >
+                    Next
+                  </a>
+                </li>
+              ) : (
+                <li>
+                  <span class="px-4 py-2 border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                    Next
+                  </span>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
+
+        <!-- Empty State CTA -->
+        {paginatedResult.totalItems === 0 && (
+          <div class="text-center py-12">
+            <p class="text-gray-500 mb-6">
+              Try adjusting your filters or
+            </p>
+            <a
+              href="/shop"
+              class="inline-flex items-center px-6 py-3 bg-brand text-white rounded-full hover:bg-brand-dark transition-colors"
+            >
+              Browse All Products
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

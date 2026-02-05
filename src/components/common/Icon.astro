@@ -1,0 +1,45 @@
+---
+// Icon Component - Renders SVG icons from centralized icon library
+import { icons, type IconName } from "./icons";
+
+interface Props {
+    name: IconName;
+    size?: number | string;
+    class?: string;
+    strokeWidth?: number;
+    color?: string;
+}
+
+const {
+    name,
+    size = 24,
+    class: className = "",
+    strokeWidth = 2,
+    color = "currentColor",
+} = Astro.props;
+
+const icon = icons[name];
+---
+
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox={icon.viewBox}
+    fill="none"
+    stroke={color}
+    stroke-width={strokeWidth}
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class:list={["icon", `icon-${name}`, className]}
+    aria-hidden="true"
+    set:html={icon.path}
+/>
+
+<style>
+    .icon {
+        display: inline-block;
+        vertical-align: middle;
+        flex-shrink: 0;
+    }
+</style>

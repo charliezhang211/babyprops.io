@@ -1,0 +1,300 @@
+---
+/**
+ * About Page - 关于我们页面
+ *
+ * 功能:
+ * - 品牌故事 (8年历程)
+ * - 使命愿景
+ * - 数据统计展示
+ * - 团队/工厂图片
+ * - CTA 号召行动
+ *
+ * @see CLAUDE.md Section 6.1
+ * @see TASKS.md Task-6.1
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import { siteSettings } from '@/config/site-settings';
+import { Image } from 'astro:assets';
+
+// SEO 元数据
+const meta = {
+  title: `About Us | ${siteSettings.siteName}`,
+  description: 'Discover the story behind Dvotinst. For 8 years, we\'ve been crafting premium newborn photography props, serving professional photographers worldwide with dedication and passion.',
+  url: `${siteSettings.siteUrl}/about`,
+  type: 'website' as const,
+};
+
+// 数据统计
+const stats = [
+  { number: '8', label: 'Years Experience', suffix: '+' },
+  { number: '10K', label: 'Photographers Served', suffix: '+' },
+  { number: '50', label: 'Countries Worldwide', suffix: '+' },
+  { number: '500', label: 'Unique Products', suffix: '+' },
+];
+
+// 核心价值观
+const values = [
+  {
+    title: 'Quality Craftsmanship',
+    description: 'Every prop is carefully handcrafted with premium materials, ensuring safety and durability for your precious newborn sessions.',
+    icon: '✨',
+  },
+  {
+    title: 'Photographer-Focused',
+    description: 'Designed by photographers, for photographers. We understand your creative needs and workflow.',
+    icon: '📸',
+  },
+  {
+    title: 'Global Trust',
+    description: '10,000+ professional photographers worldwide trust Dvotinst for their newborn photography props.',
+    icon: '🌍',
+  },
+  {
+    title: 'Innovation & Variety',
+    description: 'From classic designs to trending styles, we continuously expand our collection to inspire your creativity.',
+    icon: '🎨',
+  },
+];
+
+// Breadcrumb Schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": siteSettings.siteUrl
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "About",
+      "item": `${siteSettings.siteUrl}/about`
+    }
+  ]
+};
+---
+
+<BaseLayout {meta}>
+  <!-- Breadcrumb Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+  <!-- Hero Section -->
+  <section class="relative bg-gradient-to-br from-brand-light via-white to-brand-accent/20 py-16 md:py-24">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
+          <ol class="flex justify-center items-center gap-2">
+            <li><a href="/" class="hover:text-brand transition-colors">Home</a></li>
+            <li aria-hidden="true">/</li>
+            <li class="text-gray-800 font-medium" aria-current="page">About</li>
+          </ol>
+        </nav>
+
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif text-brand-dark mb-6">
+          About Dvotinst
+        </h1>
+        <p class="text-lg md:text-xl text-gray-700 leading-relaxed">
+          For <strong class="text-gray-900">8 years</strong>, we've been dedicated to crafting premium newborn photography props
+          that help professional photographers worldwide capture precious moments.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="py-12 bg-white border-y border-brand/20">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        {stats.map((stat) => (
+          <div class="text-center">
+            <div class="text-3xl md:text-4xl lg:text-5xl font-serif text-brand mb-2">
+              {stat.number}{stat.suffix}
+            </div>
+            <div class="text-sm md:text-base text-gray-600 font-medium">
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Story Section -->
+  <section class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
+          <!-- Image Placeholder -->
+          <div class="order-2 md:order-1">
+            <div class="aspect-[4/3] bg-brand-light rounded-lg overflow-hidden">
+              <!-- TODO: Replace with actual team/factory image -->
+              <div class="w-full h-full flex items-center justify-center text-brand-dark/30">
+                <div class="text-center">
+                  <svg class="w-20 h-20 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                  </svg>
+                  <p class="text-sm">Team Photo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Story Content -->
+          <div class="order-1 md:order-2">
+            <h2 class="text-3xl md:text-4xl font-serif text-brand-dark mb-6">
+              Our Story
+            </h2>
+            <div class="space-y-4 text-gray-700 leading-relaxed">
+              <p>
+                <strong class="text-gray-900">Dvotinst</strong> was founded in 2018 with a simple mission: to provide professional photographers
+                with the highest quality newborn photography props that inspire creativity and bring dream photoshoots to life.
+              </p>
+              <p>
+                What started as a small workshop in Shenzhen, China, has grown into a trusted global brand,
+                serving over <strong class="text-gray-900">10,000 professional photographers</strong> in <strong class="text-gray-900">50+ countries</strong>.
+              </p>
+              <p>
+                Every product we create is born from our deep understanding of photographers' needs.
+                We're not just manufacturers—we're partners in your creative journey.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission & Vision -->
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <!-- Vision -->
+          <div class="bg-gradient-to-br from-brand-light to-brand-accent/10 rounded-lg p-8">
+            <div class="text-4xl mb-4">🎯</div>
+            <h3 class="text-2xl font-serif text-brand-dark mb-4">Our Vision</h3>
+            <p class="text-gray-700 leading-relaxed">
+              To be the world's most trusted partner for professional newborn photographers,
+              empowering them to create timeless memories through innovative, safe, and beautiful props.
+            </p>
+          </div>
+
+          <!-- Mission -->
+          <div class="bg-gradient-to-br from-brand-accent/10 to-brand-light rounded-lg p-8">
+            <div class="text-4xl mb-4">💫</div>
+            <h3 class="text-2xl font-serif text-brand-dark mb-4">Our Mission</h3>
+            <p class="text-gray-700 leading-relaxed">
+              To craft premium photography props with uncompromising quality, combine artistry with functionality,
+              and provide exceptional service to photographers worldwide.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values Section -->
+  <section class="py-16 md:py-24 bg-brand-light/30">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-serif text-brand-dark text-center mb-12">
+          What We Stand For
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          {values.map((value) => (
+            <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="text-4xl mb-4">{value.icon}</div>
+              <h3 class="text-xl font-serif text-brand-dark mb-3">
+                {value.title}
+              </h3>
+              <p class="text-gray-600 leading-relaxed">
+                {value.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team/Factory Section -->
+  <section class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-serif text-brand-dark mb-6">
+          Meet Our Team
+        </h2>
+        <p class="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
+          Behind every prop is a dedicated team of artisans, designers, and photography enthusiasts
+          who share your passion for capturing perfect moments.
+        </p>
+
+        <!-- Team/Factory Images Grid -->
+        <div class="grid md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div class="aspect-square bg-brand-light rounded-lg overflow-hidden">
+              <!-- TODO: Replace with actual team/factory images -->
+              <div class="w-full h-full flex items-center justify-center text-brand-dark/30">
+                <div class="text-center">
+                  <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                  </svg>
+                  <p class="text-sm">Team Photo {i}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 md:py-24 bg-gradient-to-br from-brand to-brand-accent">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center text-white">
+        <h2 class="text-3xl md:text-4xl font-serif mb-6">
+          Ready to Elevate Your Photography?
+        </h2>
+        <p class="text-lg mb-8 opacity-90">
+          Join 10,000+ professional photographers who trust Dvotinst for their newborn sessions.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/shop"
+            class="inline-block bg-white text-brand px-8 py-4 rounded-full font-medium hover:bg-brand-light transition-colors"
+          >
+            Explore Our Collection
+          </a>
+          <a
+            href="/contact"
+            class="inline-block border-2 border-white text-white px-8 py-4 rounded-full font-medium hover:bg-white/10 transition-colors"
+          >
+            Get in Touch
+          </a>
+        </div>
+
+        <!-- Trust Badge -->
+        <div class="mt-12 pt-8 border-t border-white/20">
+          <div class="flex flex-wrap justify-center items-center gap-6 text-sm opacity-90">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🌍</span>
+              <span>Worldwide Shipping</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">⭐</span>
+              <span>8 Years Experience</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔒</span>
+              <span>Secure Checkout</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

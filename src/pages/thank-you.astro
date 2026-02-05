@@ -1,0 +1,309 @@
+---
+/**
+ * Thank You Page - Order Confirmation
+ * Displays order success message, order number, and next steps
+ * Uses client-side JS to read URL params
+ * @see CLAUDE.md Section 6 - Page Architecture
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const L = siteSettings.thankYou;
+
+const meta = {
+  title: `${L.pageTitle} | ${siteSettings.siteName}`,
+  description: 'Thank you for your order. Your order has been successfully placed.',
+  noindex: true,
+};
+
+const breadcrumbItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Order Confirmed' },
+];
+---
+
+<BaseLayout {meta}>
+  <main class="min-h-[70vh] bg-gradient-to-b from-brand-light/50 to-white">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+      <!-- Breadcrumb -->
+      <div class="mb-6">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
+
+      <!-- Success Card -->
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <!-- Success Header -->
+          <div class="bg-brand-accent/10 px-6 py-8 md:px-8 md:py-10 text-center border-b border-brand-accent/20">
+            <!-- Animated Checkmark -->
+            <div class="w-20 h-20 mx-auto mb-5 bg-brand-accent/20 rounded-full flex items-center justify-center animate-bounce-slow">
+              <svg
+                class="w-10 h-10 text-brand-accent"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 13l4 4L19 7"
+                  class="animate-draw-check"
+                />
+              </svg>
+            </div>
+
+            <h1 class="text-2xl md:text-3xl font-serif font-bold text-brand-dark mb-2">
+              {L.heroTitle}
+            </h1>
+            <p class="text-gray-600">
+              {L.heroSubtitle}
+            </p>
+          </div>
+
+          <!-- Order Details -->
+          <div class="px-6 py-6 md:px-8 md:py-8 space-y-6">
+            <!-- Order Number (client-side populated) -->
+            <div id="order-number-section" class="bg-brand-light/50 rounded-xl p-5 text-center hidden">
+              <p class="text-sm text-gray-500 mb-1">{L.orderNumberLabel}</p>
+              <p id="order-number" class="text-xl md:text-2xl font-mono font-bold text-brand-dark tracking-wide">
+              </p>
+            </div>
+
+            <!-- Confirmation Email Notice (client-side populated) -->
+            <div id="email-section" class="flex items-start gap-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100 hidden">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">{L.emailSentTitle}</p>
+                <p class="text-sm text-gray-600 mt-0.5">
+                  {L.emailSentDescription} <span id="customer-email" class="font-medium"></span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="space-y-4">
+              <h2 class="text-lg font-serif font-bold text-brand-dark">{L.whatsNextTitle}</h2>
+
+              <div class="space-y-3">
+                <!-- Step 1 -->
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 w-7 h-7 bg-brand/10 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-bold text-brand">1</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{L.step1Title}</p>
+                    <p class="text-sm text-gray-500">{L.step1Description}</p>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 w-7 h-7 bg-brand/10 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-bold text-brand">2</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{L.step2Title}</p>
+                    <p class="text-sm text-gray-500">{L.step2Description}</p>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 w-7 h-7 bg-brand/10 rounded-full flex items-center justify-center">
+                    <span class="text-xs font-bold text-brand">3</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{L.step3Title}</p>
+                    <p class="text-sm text-gray-500">{L.step3Description}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guest Account Suggestion (client-side controlled) -->
+            <div id="guest-section" class="p-4 bg-brand-light/50 rounded-xl border border-brand/10 hidden">
+              <p class="text-sm text-gray-700">
+                <span class="font-medium">{L.guestAccountSuggestion}</span>
+                <a
+                  id="register-link"
+                  href="/auth/register/"
+                  class="text-brand hover:text-brand-dark font-medium transition-colors ml-1"
+                >
+                  {L.createAccountLink}
+                </a>
+                {' '}{L.guestAccountBenefit}
+              </p>
+            </div>
+
+            <!-- Support Info -->
+            <div class="p-4 bg-gray-50 rounded-xl">
+              <p class="text-sm text-gray-600">
+                <span class="font-medium text-gray-900">{L.supportTitle}</span>
+                {' '}{L.supportText}{' '}
+                <a
+                  href={siteSettings.contact.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-green-600 hover:text-green-700 font-medium transition-colors"
+                >
+                  WhatsApp
+                </a>
+                {' '}or email{' '}
+                <a
+                  href={`mailto:${siteSettings.contact.email}`}
+                  class="text-brand hover:text-brand-dark font-medium transition-colors"
+                >
+                  {siteSettings.contact.email}
+                </a>
+              </p>
+            </div>
+          </div>
+
+          <!-- CTA Footer -->
+          <div class="px-6 py-5 md:px-8 bg-gray-50 border-t border-gray-100">
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <a
+                href="/shop/"
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand text-white font-medium rounded-full hover:bg-brand-dark transition-colors"
+              >
+                <span>{L.continueShoppingButton}</span>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+
+              <!-- View Orders button (hidden for guests) -->
+              <a
+                id="view-orders-btn"
+                href="/account/orders/"
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-brand text-brand font-medium rounded-full hover:bg-brand hover:text-white transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span>{L.viewOrdersButton}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-8 flex flex-wrap justify-center gap-6 text-sm text-gray-500">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Secure Payment</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Worldwide Shipping</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span>Quality Guaranteed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Read URL params and populate order details
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order_id');
+    const email = params.get('email');
+    const isGuest = params.get('guest') === 'true';
+
+    // Show order number if present
+    if (orderId) {
+      const orderSection = document.getElementById('order-number-section');
+      const orderNumberEl = document.getElementById('order-number');
+      if (orderSection && orderNumberEl) {
+        orderNumberEl.textContent = orderId;
+        orderSection.classList.remove('hidden');
+      }
+    }
+
+    // Show email confirmation if present
+    if (email) {
+      const emailSection = document.getElementById('email-section');
+      const customerEmailEl = document.getElementById('customer-email');
+      const registerLink = document.getElementById('register-link');
+
+      if (emailSection && customerEmailEl) {
+        customerEmailEl.textContent = email;
+        emailSection.classList.remove('hidden');
+      }
+
+      // Update register link with email
+      if (registerLink) {
+        registerLink.setAttribute('href', `/auth/register/?email=${encodeURIComponent(email)}`);
+      }
+    }
+
+    // Handle guest vs logged-in user UI
+    const guestSection = document.getElementById('guest-section');
+    const viewOrdersBtn = document.getElementById('view-orders-btn');
+
+    if (isGuest) {
+      // Show guest account suggestion
+      if (guestSection) {
+        guestSection.classList.remove('hidden');
+      }
+      // Hide view orders button for guests
+      if (viewOrdersBtn) {
+        viewOrdersBtn.classList.add('hidden');
+      }
+    }
+  });
+</script>
+
+<style>
+  /* Slow bounce animation for checkmark */
+  @keyframes bounce-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .animate-bounce-slow {
+    animation: bounce-slow 2s ease-in-out infinite;
+  }
+
+  /* Draw checkmark animation */
+  @keyframes draw-check {
+    0% {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+    100% {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-draw-check {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+    animation: draw-check 0.6s ease-out forwards;
+  }
+</style>

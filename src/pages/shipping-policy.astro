@@ -1,0 +1,338 @@
+---
+// 📍 src/pages/shipping.astro
+// Shipping Policy 页面
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `Shipping Policy | ${siteSettings.siteName}`,
+  description: 'Learn about worldwide shipping options, delivery times, and shipping costs for Dvotinst newborn photography props.',
+  image: `${siteSettings.siteUrl}/images/brand/og-image.jpg`,
+};
+
+const breadcrumbItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Shipping Policy', href: '/shipping-policy' },
+];
+
+const lastUpdated = 'February 3, 2026';
+---
+
+<BaseLayout {meta}>
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- Breadcrumb -->
+    <Breadcrumb items={breadcrumbItems} />
+
+    <!-- Page Header -->
+    <header class="text-center mb-12 mt-6">
+      <h1 class="text-4xl md:text-5xl font-serif text-brand-dark mb-4">
+        Shipping Policy
+      </h1>
+      <p class="text-gray-600 text-sm">
+        Last Updated: {lastUpdated}
+      </p>
+    </header>
+
+    <!-- Content -->
+    <div class="prose prose-lg max-w-none">
+      <div class="bg-brand-light/30 border-l-4 border-brand p-6 rounded-r-lg mb-8">
+        <p class="text-gray-700 leading-relaxed mb-2">
+          <strong>Worldwide Shipping Available</strong>
+        </p>
+        <p class="text-gray-700 leading-relaxed mb-0">
+          We ship to photographers worldwide from our facility in Shenzhen, China.
+          Free shipping on orders over <strong>$99 USD</strong>.
+        </p>
+      </div>
+
+      <!-- Section 1: Shipping Destinations -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          1. Shipping Destinations
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          We currently ship to most countries worldwide, including:
+        </p>
+        <div class="grid md:grid-cols-2 gap-4">
+          <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+            <li>United States</li>
+            <li>Canada</li>
+            <li>United Kingdom</li>
+            <li>European Union countries</li>
+            <li>Australia & New Zealand</li>
+          </ul>
+          <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+            <li>Singapore & Hong Kong</li>
+            <li>Japan & South Korea</li>
+            <li>Middle East</li>
+            <li>Latin America</li>
+            <li>Other regions (contact us)</li>
+          </ul>
+        </div>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          If your country is not listed, please contact us at
+          <a href={`mailto:${siteSettings.contact.email}`} class="text-brand hover:text-brand-dark underline">
+            {siteSettings.contact.email}
+          </a>
+          to inquire about shipping options.
+        </p>
+      </section>
+
+      <!-- Section 2: Shipping Methods & Costs -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          2. Shipping Methods and Costs
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          2.1 Standard Shipping
+        </h3>
+        <div class="bg-white border border-brand-light rounded-lg p-6 mb-6">
+          <div class="flex items-start gap-4">
+            <span class="text-3xl">📦</span>
+            <div class="flex-1">
+              <p class="font-medium text-gray-900 mb-2">Standard International Shipping</p>
+              <ul class="text-gray-700 space-y-1 text-sm">
+                <li><strong>Delivery Time:</strong> 10-25 business days</li>
+                <li><strong>Cost:</strong> Calculated at checkout (based on weight & destination)</li>
+                <li><strong>Tracking:</strong> Provided via email</li>
+                <li><strong>Free Shipping:</strong> Orders over $99 USD</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          2.2 Express Shipping
+        </h3>
+        <div class="bg-white border border-brand-light rounded-lg p-6 mb-6">
+          <div class="flex items-start gap-4">
+            <span class="text-3xl">✈️</span>
+            <div class="flex-1">
+              <p class="font-medium text-gray-900 mb-2">Express International Shipping (DHL/FedEx)</p>
+              <ul class="text-gray-700 space-y-1 text-sm">
+                <li><strong>Delivery Time:</strong> 3-7 business days</li>
+                <li><strong>Cost:</strong> Starts from $30 USD (calculated at checkout)</li>
+                <li><strong>Tracking:</strong> Real-time tracking available</li>
+                <li><strong>Signature:</strong> Required upon delivery</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-brand-accent/10 border-l-4 border-brand-accent p-4 rounded-r-lg">
+          <p class="text-sm text-gray-700 mb-0">
+            <strong>Note:</strong> Shipping costs are calculated automatically at checkout based on
+            your location, order weight, and selected shipping method.
+          </p>
+        </div>
+      </section>
+
+      <!-- Section 3: Processing Time -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          3. Order Processing Time
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Orders are typically processed within:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li><strong>In-Stock Items:</strong> 1-3 business days</li>
+          <li><strong>Made-to-Order Items:</strong> 5-10 business days</li>
+          <li><strong>Custom Orders:</strong> 10-15 business days (contact us for details)</li>
+        </ul>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          Processing time does not include shipping time. You will receive a shipping confirmation
+          email with tracking information once your order is dispatched.
+        </p>
+      </section>
+
+      <!-- Section 4: Tracking -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          4. Order Tracking
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Once your order ships, you will receive:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Shipping confirmation email with tracking number</li>
+          <li>Link to track your package</li>
+          <li>Estimated delivery date</li>
+        </ul>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          For assistance with tracking, contact us at
+          <a href={`mailto:${siteSettings.contact.email}`} class="text-brand hover:text-brand-dark underline">
+            {siteSettings.contact.email}
+          </a>
+          or via WhatsApp at
+          <a
+            href={`https://wa.me/${siteSettings.contact.whatsapp}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-brand hover:text-brand-dark underline"
+          >
+            {siteSettings.contact.phone}
+          </a>.
+        </p>
+      </section>
+
+      <!-- Section 5: Customs and Duties -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          5. Customs, Duties, and Taxes
+        </h2>
+
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-4">
+          <p class="text-sm text-gray-700 mb-0">
+            <strong>Important:</strong> International customers are responsible for all import duties,
+            taxes, and customs fees charged by your country.
+          </p>
+        </div>
+
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Please note:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Customs fees vary by country and are not included in our prices</li>
+          <li>We cannot predict or control customs charges</li>
+          <li>Packages may be delayed by customs processing</li>
+          <li>Refused packages due to customs fees will not be refunded</li>
+        </ul>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          We recommend checking with your local customs office for estimated fees before ordering.
+        </p>
+      </section>
+
+      <!-- Section 6: Delivery Issues -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          6. Delivery Issues
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          6.1 Lost or Damaged Packages
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          If your package is lost or damaged:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Contact us immediately at {siteSettings.contact.email}</li>
+          <li>We will file a claim with the carrier</li>
+          <li>We will reship or refund your order once the claim is resolved</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          6.2 Incorrect Address
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Please ensure your shipping address is correct:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>We are not responsible for orders shipped to incorrect addresses provided by customers</li>
+          <li>Address changes must be requested within 24 hours of placing the order</li>
+          <li>Returned packages due to incorrect addresses may incur reshipping fees</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          6.3 Delivery Delays
+        </h3>
+        <p class="text-gray-700 leading-relaxed">
+          Delivery times are estimates and may be affected by:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Customs processing</li>
+          <li>Weather conditions</li>
+          <li>Peak shipping seasons (holidays)</li>
+          <li>Carrier delays</li>
+        </ul>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          We are not responsible for delays caused by carriers or customs. Please contact us if
+          your order has not arrived within the estimated timeframe, and we will investigate.
+        </p>
+      </section>
+
+      <!-- Section 7: PO Boxes -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          7. PO Boxes and Military Addresses
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          We ship to PO boxes and military addresses (APO/FPO/DPO) within the United States.
+          For international PO boxes, please contact us to verify delivery options.
+        </p>
+      </section>
+
+      <!-- Section 8: Holidays -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          8. Holiday Shipping
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          During peak holiday seasons (Black Friday, Christmas, Chinese New Year):
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Processing and shipping times may be extended</li>
+          <li>Cutoff dates for holiday delivery will be posted on our website</li>
+          <li>We recommend ordering early to ensure timely delivery</li>
+        </ul>
+      </section>
+
+      <!-- Contact Section -->
+      <section class="bg-brand-light/50 p-8 rounded-lg border border-brand-light mt-12">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4">
+          Shipping Questions?
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Need help with shipping? We're here to assist you:
+        </p>
+        <div class="space-y-2 text-gray-700">
+          <p>
+            <strong>Email:</strong>
+            <a href={`mailto:${siteSettings.contact.email}`} class="text-brand hover:text-brand-dark underline ml-2">
+              {siteSettings.contact.email}
+            </a>
+          </p>
+          <p>
+            <strong>WhatsApp:</strong>
+            <a
+              href={`https://wa.me/${siteSettings.contact.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand hover:text-brand-dark underline ml-2"
+            >
+              {siteSettings.contact.phone}
+            </a>
+          </p>
+          <p class="text-sm text-gray-600 mt-4">
+            <strong>Tip:</strong> WhatsApp is the fastest way to get shipping updates and track your order!
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="text-center mt-12">
+      <a
+        href="/"
+        class="inline-block bg-brand text-white px-8 py-3 rounded-full hover:bg-brand-dark transition-colors font-medium"
+      >
+        Back to Home
+      </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .prose ul {
+    @apply mb-4;
+  }
+
+  .prose a {
+    @apply no-underline;
+  }
+</style>

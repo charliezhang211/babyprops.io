@@ -1,0 +1,387 @@
+---
+// 📍 src/pages/terms.astro
+// Terms of Service 页面
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `Terms of Service | ${siteSettings.siteName}`,
+  description: 'Read the terms and conditions for using Dvotinst. Understand your rights and responsibilities when shopping with us.',
+  image: `${siteSettings.siteUrl}/images/brand/og-image.jpg`,
+};
+
+const breadcrumbItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Terms of Service', href: '/terms' },
+];
+
+const lastUpdated = 'February 3, 2026';
+---
+
+<BaseLayout {meta}>
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- Breadcrumb -->
+    <Breadcrumb items={breadcrumbItems} />
+
+    <!-- Page Header -->
+    <header class="text-center mb-12 mt-6">
+      <h1 class="text-4xl md:text-5xl font-serif text-brand-dark mb-4">
+        Terms of Service
+      </h1>
+      <p class="text-gray-600 text-sm">
+        Last Updated: {lastUpdated}
+      </p>
+    </header>
+
+    <!-- Content -->
+    <div class="prose prose-lg max-w-none">
+      <div class="bg-brand-light/30 border-l-4 border-brand p-6 rounded-r-lg mb-8">
+        <p class="text-gray-700 leading-relaxed mb-0">
+          By accessing and using <a href={siteSettings.siteUrl} class="text-brand hover:text-brand-dark underline">{siteSettings.siteUrl}</a>,
+          you agree to be bound by these Terms of Service. Please read them carefully before making a purchase.
+        </p>
+      </div>
+
+      <!-- Section 1: Agreement to Terms -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          1. Agreement to Terms
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          These Terms of Service ("Terms") constitute a legally binding agreement between you and
+          <strong>{siteSettings.siteName}</strong> ("we", "us", "our"). By using our website and services,
+          you accept these Terms in full. If you disagree with any part of these Terms, you must not use our website.
+        </p>
+      </section>
+
+      <!-- Section 2: Use of Website -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          2. Use of Website
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          2.1 Eligibility
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          You must be at least 18 years old to make purchases on our website. By using our services,
+          you represent that you meet this age requirement and have the legal capacity to enter into contracts.
+        </p>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          2.2 Account Registration
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          When creating an account, you agree to:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Provide accurate, current, and complete information</li>
+          <li>Maintain the security of your password and account</li>
+          <li>Notify us immediately of any unauthorized use</li>
+          <li>Accept responsibility for all activities under your account</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          2.3 Prohibited Uses
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          You agree not to:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Use the website for any unlawful purpose</li>
+          <li>Attempt to gain unauthorized access to our systems</li>
+          <li>Interfere with the proper functioning of the website</li>
+          <li>Use automated systems to access the website without permission</li>
+          <li>Reproduce, duplicate, or copy content without authorization</li>
+          <li>Resell our products as new without permission</li>
+        </ul>
+      </section>
+
+      <!-- Section 3: Products and Pricing -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          3. Products and Pricing
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          3.1 Product Descriptions
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          We strive to provide accurate product descriptions and images. However:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Colors may vary slightly due to monitor settings</li>
+          <li>Handmade items may have minor variations</li>
+          <li>We do not warrant that descriptions are error-free</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          3.2 Pricing
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          All prices are listed in USD and are subject to change without notice. We reserve the right to:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Modify prices at any time</li>
+          <li>Correct pricing errors (we will notify you before processing)</li>
+          <li>Limit quantities available for purchase</li>
+          <li>Discontinue products at any time</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          3.3 Availability
+        </h3>
+        <p class="text-gray-700 leading-relaxed">
+          We do not guarantee that products will be available. If an ordered item is out of stock,
+          we will notify you and offer a refund or replacement.
+        </p>
+      </section>
+
+      <!-- Section 4: Orders and Payment -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          4. Orders and Payment
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          4.1 Order Acceptance
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Your order is an offer to purchase. We reserve the right to:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Accept or decline any order</li>
+          <li>Cancel orders due to pricing errors, stock issues, or fraud concerns</li>
+          <li>Limit order quantities</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          4.2 Payment
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          We accept payment via PayPal. By providing payment information, you represent that:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>You are authorized to use the payment method</li>
+          <li>All payment information is accurate and current</li>
+          <li>You will pay all charges incurred</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          4.3 Order Confirmation
+        </h3>
+        <p class="text-gray-700 leading-relaxed">
+          You will receive an email confirmation after placing an order. This confirmation does not
+          constitute acceptance of your order until we process and ship your items.
+        </p>
+      </section>
+
+      <!-- Section 5: Shipping and Delivery -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          5. Shipping and Delivery
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Please refer to our <a href="/shipping-policy" class="text-brand hover:text-brand-dark underline">Shipping Policy</a> for detailed information.
+          Key points:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Shipping times are estimates, not guarantees</li>
+          <li>You are responsible for providing accurate shipping addresses</li>
+          <li>Risk of loss passes to you upon delivery to the carrier</li>
+          <li>We are not responsible for customs delays or fees</li>
+        </ul>
+      </section>
+
+      <!-- Section 6: Returns and Refunds -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          6. Returns and Refunds
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          Please refer to our <a href="/return-policy" class="text-brand hover:text-brand-dark underline">Return Policy</a> for detailed information.
+          We offer returns within 30 days of delivery for most items, subject to conditions.
+        </p>
+      </section>
+
+      <!-- Section 7: Intellectual Property -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          7. Intellectual Property Rights
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          All content on this website, including but not limited to:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Text, graphics, logos, images</li>
+          <li>Product designs and photography</li>
+          <li>Software and code</li>
+          <li>Compilation and arrangement of content</li>
+        </ul>
+        <p class="text-gray-700 leading-relaxed mt-4">
+          is the exclusive property of {siteSettings.siteName} and is protected by copyright, trademark,
+          and other intellectual property laws. You may not reproduce, distribute, or create derivative
+          works without our express written permission.
+        </p>
+      </section>
+
+      <!-- Section 8: User-Generated Content -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          8. User-Generated Content
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          If you submit photos, reviews, or other content:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>You grant us a non-exclusive, royalty-free license to use, display, and distribute your content</li>
+          <li>You represent that you own or have permission to share the content</li>
+          <li>You agree not to submit content that is offensive, infringing, or violates laws</li>
+          <li>We reserve the right to remove any content at our discretion</li>
+        </ul>
+      </section>
+
+      <!-- Section 9: Disclaimers and Limitations -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-border-light pb-2">
+          9. Disclaimers and Limitations of Liability
+        </h2>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          9.1 Warranty Disclaimer
+        </h3>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          Our website and products are provided "AS IS" without warranties of any kind, either express or implied.
+          We do not warrant that:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>The website will be uninterrupted or error-free</li>
+          <li>Defects will be corrected</li>
+          <li>The website is free of viruses or harmful components</li>
+        </ul>
+
+        <h3 class="text-xl font-serif text-gray-800 mb-3 mt-6">
+          9.2 Limitation of Liability
+        </h3>
+        <p class="text-gray-700 leading-relaxed">
+          To the maximum extent permitted by law, {siteSettings.siteName} shall not be liable for any
+          indirect, incidental, special, consequential, or punitive damages arising from your use of our
+          website or products, even if we have been advised of the possibility of such damages.
+        </p>
+      </section>
+
+      <!-- Section 10: Indemnification -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          10. Indemnification
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          You agree to indemnify and hold harmless {siteSettings.siteName}, its officers, directors,
+          employees, and agents from any claims, damages, losses, liabilities, and expenses (including
+          legal fees) arising from:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+          <li>Your use of the website</li>
+          <li>Your violation of these Terms</li>
+          <li>Your violation of any third-party rights</li>
+        </ul>
+      </section>
+
+      <!-- Section 11: Governing Law -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          11. Governing Law and Dispute Resolution
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          These Terms shall be governed by and construed in accordance with the laws of China,
+          without regard to conflict of law principles.
+        </p>
+        <p class="text-gray-700 leading-relaxed">
+          Any disputes arising from these Terms or your use of the website shall be resolved through
+          good faith negotiations. If negotiations fail, disputes shall be submitted to the courts
+          of Shenzhen, China.
+        </p>
+      </section>
+
+      <!-- Section 12: Changes to Terms -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          12. Changes to These Terms
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          We reserve the right to modify these Terms at any time. Changes will be posted on this page
+          with an updated "Last Updated" date. Your continued use of the website after changes
+          constitutes acceptance of the modified Terms.
+        </p>
+      </section>
+
+      <!-- Section 13: Severability -->
+      <section class="mb-10">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4 border-b border-brand-light pb-2">
+          13. Severability
+        </h2>
+        <p class="text-gray-700 leading-relaxed">
+          If any provision of these Terms is found to be invalid or unenforceable, the remaining
+          provisions shall continue in full force and effect.
+        </p>
+      </section>
+
+      <!-- Contact Section -->
+      <section class="bg-brand-light/50 p-8 rounded-lg border border-brand-light mt-12">
+        <h2 class="text-2xl font-serif text-brand-dark mb-4">
+          Questions About These Terms?
+        </h2>
+        <p class="text-gray-700 leading-relaxed mb-4">
+          If you have any questions about these Terms of Service, please contact us:
+        </p>
+        <div class="space-y-2 text-gray-700">
+          <p>
+            <strong>Email:</strong>
+            <a href={`mailto:${siteSettings.contact.email}`} class="text-brand hover:text-brand-dark underline ml-2">
+              {siteSettings.contact.email}
+            </a>
+          </p>
+          <p>
+            <strong>WhatsApp:</strong>
+            <a
+              href={`https://wa.me/${siteSettings.contact.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand hover:text-brand-dark underline ml-2"
+            >
+              {siteSettings.contact.phone}
+            </a>
+          </p>
+          <p>
+            <strong>Address:</strong>
+            <span class="ml-2">{siteSettings.contact.address}</span>
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="text-center mt-12">
+      <a
+        href="/"
+        class="inline-block bg-brand text-white px-8 py-3 rounded-full hover:bg-brand-dark transition-colors font-medium"
+      >
+        Back to Home
+      </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .prose ul {
+    @apply mb-4;
+  }
+
+  .prose a {
+    @apply no-underline;
+  }
+</style>

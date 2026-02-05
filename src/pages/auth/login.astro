@@ -1,0 +1,72 @@
+---
+/**
+ * Login Page - Auth 登录页面
+ *
+ * 功能:
+ * - 用户登录表单
+ * - 品牌配色 (Morandic Palette)
+ * - 响应式设计
+ *
+ * @see CLAUDE.md Section 7B.1
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import LoginForm from '@/components/auth/LoginForm';
+import { siteSettings } from '@/config/site-settings';
+
+// SEO 元数据
+const meta = {
+  title: `Sign In | ${siteSettings.siteName}`,
+  description: `Sign in to your ${siteSettings.siteName} account to view orders, manage addresses, and checkout faster.`,
+  noindex: true,
+};
+---
+
+<BaseLayout meta={meta} bodyClass="bg-brand-light">
+  <main class="auth-page">
+    <div class="auth-container">
+      <!-- Logo -->
+      <div class="auth-logo">
+        <a href="/" aria-label={siteSettings.siteName}>
+          <span class="auth-logo-text">{siteSettings.siteName}</span>
+        </a>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to your account to continue</p>
+
+        <!-- Login Form (React Island) -->
+        <LoginForm client:load />
+
+        <!-- Trust Badge -->
+        <div class="auth-trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Secure login with SSL encryption</span>
+        </div>
+      </div>
+
+      <!-- Additional Links -->
+      <div class="mt-6 text-center text-sm text-gray-500">
+        <p>
+          Need help? <a href="/contact/" class="text-brand hover:text-brand-dark transition-colors">Contact Support</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  /* Override BaseLayout header/footer for auth pages */
+  :global(header),
+  :global(footer),
+  :global(.fixed.bottom-6.right-6) {
+    display: none;
+  }
+</style>

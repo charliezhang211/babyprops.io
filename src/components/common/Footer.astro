@@ -1,0 +1,320 @@
+﻿---
+// Footer Component
+import { siteSettings } from "@/config/site-settings";
+const currentYear = new Date().getFullYear();
+
+const footerLinks = {
+    shop: [
+        { label: "Michelin Kits", href: "/michelin-style-tire-lettering/" },
+        { label: "Toyo Kits", href: "/toyo-style-tire-lettering/" },
+        { label: "Custom Letters", href: "/create-your-own/" },
+        { label: "Accessories", href: "/shop/accessories/" },
+    ],
+    support: [
+        { label: "Installation Guide", href: "/guides/installation/" },
+        { label: "Size Chart", href: "/size-chart/" },
+        { label: "FAQs", href: "/faqs/" },
+        { label: "Contact Us", href: "/contact/" },
+    ],
+    business: [
+        { label: "Wholesale", href: "/wholesale/" },
+        { label: "About Us", href: "/about/" },
+        { label: "Factory Tour", href: "/factory/" },
+    ],
+};
+---
+
+<footer class="footer">
+    <!-- Racing stripe top -->
+    <div class="footer-stripe"></div>
+
+    <div class="footer-main container">
+        <!-- Brand Column -->
+        <div class="footer-brand">
+            <a href="/" class="footer-logo">
+                <span class="logo-icon">🏁</span>
+                <span class="logo-text">{siteSettings.siteName}</span>
+            </a>
+            <p class="footer-tagline">Factory Direct Tire Lettering</p>
+            <p class="footer-description">
+                Source manufacturer from Shenzhen, China. Premium raised rubber
+                tire letters at wholesale prices.
+            </p>
+
+            <div class="footer-contact">
+                <a
+                    href={siteSettings.contact.whatsappUrl}
+                    class="contact-item whatsapp"
+                >
+                    <span class="contact-icon">💬</span>
+                    <span>{siteSettings.contact.phone}</span>
+                </a>
+                <a
+                    href={`mailto:${siteSettings.contact.email}`}
+                    class="contact-item email"
+                >
+                    <span class="contact-icon">✉️</span>
+                    <span>{siteSettings.contact.email}</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Links Columns -->
+        <div class="footer-links">
+            <div class="footer-column">
+                <h4 class="footer-heading">Shop</h4>
+                <ul class="footer-list">
+                    {
+                        footerLinks.shop.map((link) => (
+                            <li>
+                                <a href={link.href}>{link.label}</a>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Support</h4>
+                <ul class="footer-list">
+                    {
+                        footerLinks.support.map((link) => (
+                            <li>
+                                <a href={link.href}>{link.label}</a>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4 class="footer-heading">Business</h4>
+                <ul class="footer-list">
+                    {
+                        footerLinks.business.map((link) => (
+                            <li>
+                                <a href={link.href}>{link.label}</a>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+            <p class="copyright">
+                © {currentYear} {siteSettings.siteName}. All rights reserved.
+            </p>
+            <div class="footer-legal">
+                <a href="/privacy-policy/">Privacy Policy</a>
+                <a href="/terms/">Terms of Service</a>
+            </div>
+            <div class="payment-badges">
+                <span class="badge">💳 PayPal</span>
+                <span class="badge">💳 Stripe</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkered flag pattern -->
+    <div class="checkered-border"></div>
+</footer>
+
+<style>
+    .footer {
+        background: var(--carbon-gray);
+        position: relative;
+        margin-top: var(--space-20);
+    }
+
+    .footer-stripe {
+        height: 4px;
+        background: var(--gradient-racing);
+    }
+
+    .footer-main {
+        display: grid;
+        grid-template-columns: 1.5fr 2fr;
+        gap: var(--space-16);
+        padding: var(--space-16) 0;
+    }
+
+    .footer-logo {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-family: var(--font-heading);
+        font-size: var(--text-2xl);
+        color: var(--pure-white);
+        text-decoration: none;
+        margin-bottom: var(--space-2);
+    }
+
+    .footer-logo .logo-text {
+        background: var(--gradient-racing);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .footer-tagline {
+        font-family: var(--font-heading);
+        font-size: var(--text-sm);
+        color: var(--chrome);
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        margin-bottom: var(--space-4);
+    }
+
+    .footer-description {
+        color: var(--silver);
+        font-size: var(--text-sm);
+        line-height: 1.7;
+        max-width: 300px;
+    }
+
+    .footer-contact {
+        margin-top: var(--space-6);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        color: var(--silver);
+        font-size: var(--text-sm);
+        transition: color var(--transition-fast);
+    }
+
+    .contact-item:hover {
+        color: var(--racing-red);
+    }
+
+    .footer-links {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-8);
+    }
+
+    .footer-heading {
+        font-family: var(--font-heading);
+        font-size: var(--text-base);
+        color: var(--pure-white);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: var(--space-4);
+        position: relative;
+        padding-left: var(--space-4);
+    }
+
+    .footer-heading::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--racing-red);
+        border-radius: var(--radius-full);
+    }
+
+    .footer-list {
+        list-style: none;
+    }
+
+    .footer-list li {
+        margin-bottom: var(--space-2);
+    }
+
+    .footer-list a {
+        color: var(--silver);
+        font-size: var(--text-sm);
+        transition: all var(--transition-fast);
+    }
+
+    .footer-list a:hover {
+        color: var(--pure-white);
+        padding-left: var(--space-2);
+    }
+
+    .footer-bottom {
+        background: var(--tire-black);
+        padding: var(--space-4) 0;
+        border-top: 1px solid var(--asphalt);
+    }
+
+    .footer-bottom-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+    }
+
+    .copyright {
+        color: var(--steel);
+        font-size: var(--text-sm);
+    }
+
+    .footer-legal {
+        display: flex;
+        gap: var(--space-6);
+    }
+
+    .footer-legal a {
+        color: var(--steel);
+        font-size: var(--text-sm);
+    }
+
+    .footer-legal a:hover {
+        color: var(--racing-red);
+    }
+
+    .payment-badges {
+        display: flex;
+        gap: var(--space-3);
+    }
+
+    .badge {
+        font-size: var(--text-xs);
+        color: var(--chrome);
+    }
+
+    .checkered-border {
+        height: 8px;
+        background-image:
+            linear-gradient(45deg, var(--asphalt) 25%, transparent 25%),
+            linear-gradient(-45deg, var(--asphalt) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, var(--asphalt) 75%),
+            linear-gradient(-45deg, transparent 75%, var(--asphalt) 75%);
+        background-size: 16px 16px;
+        background-position:
+            0 0,
+            0 8px,
+            8px -8px,
+            -8px 0px;
+        background-color: var(--tire-black);
+    }
+
+    @media (max-width: 768px) {
+        .footer-main {
+            grid-template-columns: 1fr;
+            gap: var(--space-8);
+        }
+
+        .footer-links {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .footer-bottom-inner {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>

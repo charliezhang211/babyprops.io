@@ -1,0 +1,73 @@
+---
+// 📍 src/components/home/CategoryCard.astro
+// 单个分类卡片组件
+
+import type { Category } from '@/config/categories';
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const categoryUrl = `/shop/${category.slug}`;
+---
+
+<a
+  href={categoryUrl}
+  class="group relative block overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+  data-component="category-card"
+>
+  <!-- 图片容器 -->
+  <div class="relative aspect-[4/3] overflow-hidden">
+    <!-- 占位图 - 实际项目中替换为真实图片 -->
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-light to-brand/20">
+      <!-- 图片占位符 -->
+      <div class="flex h-full items-center justify-center text-brand-dark/30">
+        <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- 悬停蒙版 -->
+    <div class="absolute inset-0 bg-brand-dark/0 transition-all duration-300 group-hover:bg-brand-dark/10"></div>
+
+    <!-- Badge (如果有) -->
+    {category.badge && (
+      <div class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium bg-white/90 backdrop-blur-sm shadow-sm">
+        {category.badge === 'Best Value' && (
+          <span class="text-brand-accent">★ {category.badge}</span>
+        )}
+        {category.badge === 'Pro' && (
+          <span class="text-brand-dark">⚡ {category.badge}</span>
+        )}
+        {category.badge === 'New' && (
+          <span class="text-brand">✨ {category.badge}</span>
+        )}
+      </div>
+    )}
+  </div>
+
+  <!-- 内容区域 -->
+  <div class="p-6 bg-white">
+    <h3 class="text-xl font-serif font-semibold text-brand-dark mb-2 group-hover:text-brand transition-colors">
+      {category.name}
+    </h3>
+    <p class="text-sm text-gray-600 leading-relaxed">
+      {category.description}
+    </p>
+
+    <!-- 查看更多箭头 -->
+    <div class="mt-4 flex items-center text-brand text-sm font-medium">
+      <span class="group-hover:mr-2 transition-all duration-300">Explore Collection</span>
+      <svg
+        class="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+  </div>
+</a>

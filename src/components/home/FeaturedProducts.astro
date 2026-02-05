@@ -1,0 +1,104 @@
+---
+// 📍 src/components/home/FeaturedProducts.astro
+// 首页精选产品展示组件
+
+import { getCollection } from 'astro:content';
+import ProductCard from '@/components/plp/ProductCard.astro';
+import Button from '@/components/ui/Button.astro';
+
+// 获取所有精选产品
+const allProducts = await getCollection('products');
+
+// 筛选 is_featured 且 in_stock 的产品，限制 8 个
+const featuredProducts = allProducts
+  .filter((product) => product.data.is_featured && product.data.in_stock)
+  .slice(0, 8);
+
+// 如果没有精选产品，不渲染组件
+if (featuredProducts.length === 0) {
+  return null;
+}
+---
+
+<section
+  class="py-16 px-4 bg-gradient-to-b from-white to-brand-light/20"
+  data-component="featured-products"
+>
+  <div class="container mx-auto max-w-7xl">
+    {/* 顶部: 标题 + View All 链接 */}
+    <div class="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
+      <div class="text-center sm:text-left">
+        <h2 class="text-3xl md:text-4xl font-serif text-brand-dark mb-2">
+          Featured Products
+        </h2>
+        <p class="text-gray-600 text-sm md:text-base">
+          Handpicked props loved by professional photographers worldwide
+        </p>
+      </div>
+
+      {/* View All 按钮 */}
+      <a href="/shop" class="shrink-0">
+        <Button variant="secondary" size="md">
+          View All Products
+          <svg class="w-4 h-4 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </Button>
+      </a>
+    </div>
+
+    {/* 产品网格 - 响应式 4 列 */}
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      data-featured-grid
+    >
+      {featuredProducts.map((product, index) => (
+        <ProductCard
+          product={product}
+          showQuickAdd={false}
+          loading={index < 4 ? 'eager' : 'lazy'}
+          class="h-full"
+        />
+      ))}
+    </div>
+
+    {/* 底部提示 - 如果产品少于 8 个 */}
+    {featuredProducts.length < 8 && (
+      <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500">
+          Showing {featuredProducts.length} featured {featuredProducts.length === 1 ? 'product' : 'products'}
+        </p>
+      </div>
+    )}
+
+    {/* 信任标识 */}
+    <div class="mt-12 pt-8 border-t border-brand/10">
+      <div class="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-600">
+        <div class="flex items-center gap-2">
+          <span class="text-brand text-lg">🌍</span>
+          <span>Worldwide Shipping</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-brand text-lg">⭐</span>
+          <span>8 Years Experience</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-brand text-lg">✨</span>
+          <span>Handmade Quality</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-brand text-lg">🔒</span>
+          <span>Secure Checkout</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 确保卡片在网格中高度一致 */
+  [data-featured-grid] > * {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

@@ -1,0 +1,87 @@
+---
+/**
+ * Register Page - Auth 注册页面
+ *
+ * 功能:
+ * - 新用户注册表单
+ * - 品牌配色 (Morandic Palette)
+ * - 响应式设计
+ *
+ * @see CLAUDE.md Section 7B.1
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import RegisterForm from '@/components/auth/RegisterForm';
+import { siteSettings } from '@/config/site-settings';
+
+// SEO 元数据
+const meta = {
+  title: `Create Account | ${siteSettings.siteName}`,
+  description: `Create your ${siteSettings.siteName} account to track orders, save shipping addresses, and enjoy faster checkout.`,
+  noindex: true,
+};
+---
+
+<BaseLayout meta={meta} bodyClass="bg-brand-light">
+  <main class="auth-page">
+    <div class="auth-container">
+      <!-- Logo -->
+      <div class="auth-logo">
+        <a href="/" aria-label={siteSettings.siteName}>
+          <span class="auth-logo-text">{siteSettings.siteName}</span>
+        </a>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join our community of professional photographers</p>
+
+        <!-- Register Form (React Island) -->
+        <RegisterForm client:load />
+
+        <!-- Trust Badge -->
+        <div class="auth-trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Your data is protected and never shared</span>
+        </div>
+      </div>
+
+      <!-- Benefits -->
+      <div class="mt-8 grid grid-cols-3 gap-4 text-center">
+        <div class="text-gray-600">
+          <div class="text-2xl mb-1">&#128230;</div>
+          <p class="text-xs">Track Orders</p>
+        </div>
+        <div class="text-gray-600">
+          <div class="text-2xl mb-1">&#128205;</div>
+          <p class="text-xs">Save Addresses</p>
+        </div>
+        <div class="text-gray-600">
+          <div class="text-2xl mb-1">&#9889;</div>
+          <p class="text-xs">Fast Checkout</p>
+        </div>
+      </div>
+
+      <!-- Additional Links -->
+      <div class="mt-6 text-center text-sm text-gray-500">
+        <p>
+          Need help? <a href="/contact/" class="text-brand hover:text-brand-dark transition-colors">Contact Support</a>
+        </p>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  /* Override BaseLayout header/footer for auth pages */
+  :global(header),
+  :global(footer),
+  :global(.fixed.bottom-6.right-6) {
+    display: none;
+  }
+</style>

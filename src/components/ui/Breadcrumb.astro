@@ -1,0 +1,71 @@
+---
+// 📍 src/components/ui/Breadcrumb.astro
+// 面包屑导航组件 - 带 Schema.org 结构化数据
+
+import { siteSettings } from '@/config/site-settings';
+
+interface BreadcrumbItem {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+
+// 构建面包屑列表 (始终包含 Home)
+const breadcrumbs: BreadcrumbItem[] = [
+  { label: 'Home', href: '/' },
+  ...items,
+];
+
+// 构建 Schema.org 结构化数据
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    item: `${siteSettings.siteUrl}${item.href}`,
+  })),
+};
+---
+
+<nav
+  aria-label="Breadcrumb"
+  class={`text-sm ${className}`}
+  data-component="breadcrumb"
+>
+  <ol class="flex items-center flex-wrap gap-2">
+    {breadcrumbs.map((item, index) => {
+      const isLast = index === breadcrumbs.length - 1;
+
+      return (
+        <li class="flex items-center gap-2">
+          {!isLast ? (
+            <>
+              <a
+                href={item.href}
+                class="text-gray-600 hover:text-brand transition-colors"
+              >
+                {item.label}
+              </a>
+              <span class="text-gray-400" aria-hidden="true">/</span>
+            </>
+          ) : (
+            <span class="text-brand-dark font-medium" aria-current="page">
+              {item.label}
+            </span>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<!-- Schema.org 结构化数据 -->
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />

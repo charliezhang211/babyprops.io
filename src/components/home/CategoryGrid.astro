@@ -1,0 +1,84 @@
+---
+// 📍 src/components/home/CategoryGrid.astro
+// 首页分类网格组件 - 展示 8 大产品分类
+
+import { categories } from '@/config/categories';
+import CategoryCard from './CategoryCard.astro';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+}
+
+const {
+  title = 'Shop by Category',
+  subtitle = 'Explore our specialized collections for newborn photography',
+} = Astro.props;
+---
+
+<section class="py-16 bg-gradient-to-b from-white to-brand-light/30" data-component="category-grid">
+  <div class="container mx-auto px-4">
+    <!-- 标题区域 -->
+    <div class="text-center mb-12">
+      <h2 class="section-title mb-3">
+        {title}
+      </h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        {subtitle}
+      </p>
+    </div>
+
+    <!-- 分类网格 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      {categories.map((category) => (
+        <CategoryCard category={category} />
+      ))}
+    </div>
+
+    <!-- 可选: 查看全部按钮 -->
+    <div class="text-center mt-12">
+      <a
+        href="/shop"
+        class="inline-flex items-center gap-2 px-8 py-3 rounded-full border-2 border-brand text-brand font-medium transition-all duration-300 hover:bg-brand hover:text-white"
+      >
+        View All Products
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 自定义网格间距和动画 */
+  [data-component="category-grid"] {
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 响应式优化 */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    /* 平板: 2 列布局 */
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    /* 桌面: 4 列布局 */
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

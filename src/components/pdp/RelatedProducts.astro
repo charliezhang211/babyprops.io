@@ -1,0 +1,170 @@
+---
+// 📍 src/components/pdp/RelatedProducts.astro
+// 相关产品推荐组件 - "Complete the Look"
+
+import { getCollection, type CollectionEntry } from 'astro:content';
+import ProductCard from '@/components/plp/ProductCard.astro';
+
+interface Props {
+  currentProduct: CollectionEntry<'products'>;
+  limit?: number;
+  title?: string;
+  class?: string;
+}
+
+const {
+  currentProduct,
+  limit = 8,
+  title = 'Complete the Look',
+  class: className = '',
+} = Astro.props;
+
+const currentData = currentProduct.data;
+
+/**
+ * 获取推荐产品
+ * 优先级:
+ * 1. 手动指定的 related_products
+ * 2. 同色系产品 (相同 color_family)
+ * 3. 同分类产品 (相同 category)
+ */
+async function getRecommendedProducts(): Promise<CollectionEntry<'products'>[]> {
+  // 获取所有产品 (排除当前产品，只保留有库存)
+  const allProducts = await getCollection('products', ({ id, data }) => {
+    return id !== currentProduct.id && data.in_stock;
+  });
+
+  const recommended: CollectionEntry<'products'>[] = [];
+
+  // 1. 手动指定的相关产品 (如果有)
+  if (currentData.related_products && currentData.related_products.length > 0) {
+    const manualRelated = allProducts.filter((p) =>
+      currentData.related_products?.includes(p.data.slug)
+    );
+    recommended.push(...manualRelated);
+  }
+
+  // 2. 同色系产品 (如果当前产品有 color_family)
+  if (currentData.color_family && recommended.length < limit) {
+    const sameColorFamily = allProducts.filter(
+      (p) =>
+        p.data.color_family === currentData.color_family &&
+        !recommended.some((r) => r.id === p.id)
+    );
+    recommended.push(...sameColorFamily);
+  }
+
+  // 3. 同分类产品
+  if (recommended.length < limit) {
+    const sameCategory = allProducts.filter(
+      (p) =>
+        p.data.category === currentData.category &&
+        !recommended.some((r) => r.id === p.id)
+    );
+    recommended.push(...sameCategory);
+  }
+
+  // 4. 如果还不够，添加其他新品或精选产品
+  if (recommended.length < limit) {
+    const featuredOrNew = allProducts.filter(
+      (p) =>
+        (p.data.is_featured || p.data.is_new) &&
+        !recommended.some((r) => r.id === p.id)
+    );
+    recommended.push(...featuredOrNew);
+  }
+
+  // 5. 如果还不够，添加任意其他产品
+  if (recommended.length < limit) {
+    const others = allProducts.filter(
+      (p) => !recommended.some((r) => r.id === p.id)
+    );
+    recommended.push(...others);
+  }
+
+  // 限制数量并返回
+  return recommended.slice(0, limit);
+}
+
+const relatedProducts = await getRecommendedProducts();
+
+// 如果没有相关产品，不渲染组件
+if (relatedProducts.length === 0) {
+  return null;
+}
+---
+
+<section
+  class:list={['py-12 bg-brand-light/30', className]}
+  data-component="related-products"
+  aria-labelledby="related-products-title"
+>
+  <div class="container mx-auto px-4">
+    {/* 标题 */}
+    <div class="text-center mb-8">
+      <h2
+        id="related-products-title"
+        class="text-3xl md:text-4xl font-serif text-brand-dark mb-2"
+      >
+        {title}
+      </h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Explore complementary props to create the perfect photoshoot setup
+      </p>
+    </div>
+
+    {/* 产品网格 */}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {relatedProducts.map((product, index) => (
+        <ProductCard
+          product={product}
+          loading={index < 4 ? 'eager' : 'lazy'}
+          showQuickAdd={false}
+        />
+      ))}
+    </div>
+
+    {/* "View All" 按钮 (可选) */}
+    {currentData.category && (
+      <div class="text-center mt-8">
+        <a
+          href={`/shop/${currentData.category}`}
+          class="inline-flex items-center gap-2 px-6 py-3 text-brand-dark border-2 border-brand rounded-full hover:bg-brand hover:text-white transition-colors font-medium"
+        >
+          View All {currentData.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  /* 淡入动画 (可选) */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  [data-component="related-products"] {
+    animation: fadeInUp 0.6s ease-out;
+  }
+</style>

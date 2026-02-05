@@ -1,0 +1,49 @@
+---
+// CompatList Component - SEO-critical compatibility list
+interface Props {
+    tires?: string[];
+    sizes?: string[];
+}
+
+const { tires = [], sizes = [] } = Astro.props;
+---
+
+{
+    (tires.length > 0 || sizes.length > 0) && (
+        <div class="p-6 bg-slate-900 rounded-xl mt-8" data-pdp="compat-list">
+            <h3 class="font-heading text-xl text-white mb-4 uppercase">
+                Compatibility
+            </h3>
+
+            {tires.length > 0 && (
+                <div class="mb-4 last:mb-0">
+                    <h4 class="text-sm text-slate-400 uppercase tracking-wide mb-2">
+                        Compatible Tire Models
+                    </h4>
+                    <ul class="list-none flex flex-wrap gap-2">
+                        {tires.map((tire) => (
+                            <li class="text-sm text-slate-300 px-3 py-1 bg-slate-800 rounded">
+                                {tire}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {sizes.length > 0 && (
+                <div class="mb-4 last:mb-0">
+                    <h4 class="text-sm text-slate-400 uppercase tracking-wide mb-2">
+                        Fits Sizes
+                    </h4>
+                    <div class="flex flex-wrap gap-2">
+                        {sizes.map((size) => (
+                            <span class="text-xs font-semibold text-brand px-2 py-1 bg-brand/15 border border-brand rounded">
+                                {size}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}

@@ -1,0 +1,339 @@
+---
+/**
+ * New In - 新品列表页
+ *
+ * 功能:
+ * - 展示所有标记为 is_new 的产品
+ * - 筛选 (颜色/材质/价格)
+ * - 排序
+ * - 分页 (每页 12 个)
+ * - SEO 优化
+ *
+ * @see CLAUDE.md Section 6.2
+ * @see TASKS.md Task-3.8
+ */
+
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import FilterSidebar from '@/components/plp/FilterSidebar';
+import SortDropdown from '@/components/plp/SortDropdown';
+import ProductGrid from '@/components/plp/ProductGrid.astro';
+import { siteSettings } from '@/config/site-settings';
+import {
+  filterProducts,
+  sortProducts,
+  paginateProducts,
+  getPriceRange,
+} from '@/lib/product-utils';
+import type { ColorFamilySlug } from '@/config/color-families';
+import type { MaterialSlug } from '@/config/materials';
+import type { SortOption } from '@/stores/filter';
+
+// 获取所有新品 (is_new = true 且 in_stock = true)
+const allNewProducts = await getCollection(
+  'products',
+  ({ data }) => data.is_new && data.in_stock
+);
+
+// 获取价格范围
+const [minPrice, maxPrice] = getPriceRange(allNewProducts);
+
+// 从 URL 参数获取筛选条件
+const url = new URL(Astro.request.url);
+
+// 解析颜色筛选 (?colors=pastel,cream)
+const colorsParam = url.searchParams.get('colors');
+const selectedColors = colorsParam
+  ? colorsParam.split(',').filter(Boolean) as ColorFamilySlug[]
+  : [];
+
+// 解析材质筛选 (?materials=wood,mohair)
+const materialsParam = url.searchParams.get('materials');
+const selectedMaterials = materialsParam
+  ? materialsParam.split(',').filter(Boolean) as MaterialSlug[]
+  : [];
+
+// 解析价格筛选 (?price=0-100)
+const priceParam = url.searchParams.get('price');
+let priceRange: [number, number] | undefined;
+if (priceParam) {
+  const [min, max] = priceParam.split('-').map(Number);
+  if (!isNaN(min) && !isNaN(max)) {
+    priceRange = [min, max];
+  }
+}
+
+// 解析排序 (?sort=price-asc)
+const sortParam = url.searchParams.get('sort');
+const sortOption = (sortParam as SortOption) || 'featured';
+
+// 解析页码 (?page=2)
+const pageParam = url.searchParams.get('page');
+const currentPage = Math.max(1, parseInt(pageParam || '1', 10));
+const pageSize = 12;
+
+// 应用筛选
+const filteredProducts = filterProducts(allNewProducts, {
+  colors: selectedColors.length > 0 ? selectedColors : undefined,
+  materials: selectedMaterials.length > 0 ? selectedMaterials : undefined,
+  priceRange,
+  inStockOnly: true,
+});
+
+// 应用排序
+const sortedProducts = sortProducts(filteredProducts, sortOption);
+
+// 应用分页
+const paginatedResult = paginateProducts(sortedProducts, {
+  page: currentPage,
+  pageSize,
+});
+
+// SEO 元数据
+const meta = {
+  title: `New In | Latest Newborn Photography Props | ${siteSettings.siteName}`,
+  description: `Discover the latest newborn photography props at ${siteSettings.siteName}. Fresh arrivals of professional quality posing props, wraps, outfits & more.`,
+  url: `${siteSettings.siteUrl}/new-in`,
+  type: 'website' as const,
+};
+
+// 面包屑结构化数据
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": siteSettings.siteUrl
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "New In",
+      "item": `${siteSettings.siteUrl}/new-in`
+    }
+  ]
+};
+
+// 构建分页 URL 的辅助函数
+const buildPageUrl = (page: number) => {
+  const params = new URLSearchParams();
+  params.set('page', page.toString());
+  if (colorsParam) params.set('colors', colorsParam);
+  if (materialsParam) params.set('materials', materialsParam);
+  if (priceParam) params.set('price', priceParam);
+  if (sortParam) params.set('sort', sortParam);
+  return `/new-in?${params.toString()}`;
+};
+
+// 预计算分页显示逻辑
+const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) => {
+  const page = i + 1;
+  const isActive = page === currentPage;
+  const showPage =
+    page === 1 ||
+    page === paginatedResult.totalPages ||
+    Math.abs(page - currentPage) <= 1;
+
+  let type: 'active' | 'link' | 'ellipsis-prev' | 'ellipsis-next' | 'hidden' = 'link';
+
+  if (isActive) {
+    type = 'active';
+  } else if (!showPage && page === currentPage - 2) {
+    type = 'ellipsis-prev';
+  } else if (!showPage && page === currentPage + 2) {
+    type = 'ellipsis-next';
+  } else if (!showPage) {
+    type = 'hidden';
+  }
+
+  return {
+    page,
+    type,
+    url: buildPageUrl(page),
+  };
+}).filter(item => item.type !== 'hidden');
+---
+
+<BaseLayout {meta}>
+  <!-- Breadcrumb Schema -->
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+  <div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-6">
+      <ol class="flex items-center gap-2 text-sm text-gray-600">
+        <li>
+          <a href="/" class="hover:text-brand transition-colors">Home</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-brand-dark font-medium">
+          New In
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <h1 class="text-3xl md:text-4xl font-serif text-brand-dark">
+          New In
+        </h1>
+        <span class="bg-brand text-white text-sm font-medium px-3 py-1 rounded-full">
+          Latest Arrivals
+        </span>
+      </div>
+      <p class="text-gray-600 max-w-2xl">
+        Discover our newest collection of professional newborn photography props.
+        Fresh designs handpicked to inspire your next photoshoot.
+      </p>
+    </header>
+
+    <!-- Main Content: Sidebar + Product Grid -->
+    <div class="lg:grid lg:grid-cols-[280px,1fr] lg:gap-8">
+      <!-- Filter Sidebar (Desktop) -->
+      <aside class="hidden lg:block">
+        <FilterSidebar
+          client:load
+          mode="sidebar"
+          priceConfig={{ min: minPrice, max: maxPrice }}
+        />
+      </aside>
+
+      <!-- Product Grid Section -->
+      <div>
+        <!-- Toolbar: Results Count + Sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+          <!-- Results Count -->
+          <p class="text-sm text-gray-600">
+            {paginatedResult.totalItems === 0 ? (
+              <span>No new products available at the moment</span>
+            ) : (
+              <span>
+                Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> - <strong>{Math.min(currentPage * pageSize, paginatedResult.totalItems)}</strong> of <strong>{paginatedResult.totalItems}</strong> new products
+              </span>
+            )}
+          </p>
+
+          <!-- Mobile Filter Button -->
+          <div class="flex items-center gap-3">
+            <FilterSidebar
+              client:load
+              mode="drawer"
+              priceConfig={{ min: minPrice, max: maxPrice }}
+            />
+
+            <!-- Sort Dropdown -->
+            <SortDropdown client:load />
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <ProductGrid products={paginatedResult.data} />
+
+        <!-- Empty State (if no new products) -->
+        {paginatedResult.totalItems === 0 && (
+          <div class="text-center py-16">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-brand-light rounded-full mb-6">
+              <svg class="w-10 h-10 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <h2 class="text-2xl font-serif text-brand-dark mb-3">
+              More Coming Soon
+            </h2>
+            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+              We're always adding new items to our collection. Check back soon or browse our complete catalog.
+            </p>
+            <a
+              href="/shop"
+              class="inline-block bg-brand text-white px-6 py-3 rounded-full hover:bg-brand-dark transition-colors font-medium"
+            >
+              Browse All Products
+            </a>
+          </div>
+        )}
+
+        <!-- Pagination -->
+        {paginatedResult.totalPages > 1 && (
+          <nav aria-label="Pagination" class="mt-12 flex justify-center">
+            <ul class="flex items-center gap-2">
+              <!-- Previous Button -->
+              {paginatedResult.hasPreviousPage ? (
+                <li>
+                  <a
+                    href={buildPageUrl(currentPage - 1)}
+                    class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </a>
+                </li>
+              ) : (
+                <li>
+                  <span class="px-4 py-2 border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                    Previous
+                  </span>
+                </li>
+              )}
+
+              <!-- Page Numbers -->
+              {pageNumbers.map((item) => {
+                if (item.type === 'ellipsis-prev' || item.type === 'ellipsis-next') {
+                  return (
+                    <li key={`ellipsis-${item.page}`}>
+                      <span class="px-3 py-2">...</span>
+                    </li>
+                  );
+                }
+
+                if (item.type === 'active') {
+                  return (
+                    <li key={`page-${item.page}`}>
+                      <span class="px-4 py-2 bg-brand text-white rounded font-medium" aria-current="page">
+                        {item.page}
+                      </span>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={`page-${item.page}`}>
+                    <a
+                      href={item.url}
+                      class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                      aria-label={`Go to page ${item.page}`}
+                    >
+                      {item.page}
+                    </a>
+                  </li>
+                );
+              })}
+
+              <!-- Next Button -->
+              {paginatedResult.hasNextPage ? (
+                <li>
+                  <a
+                    href={buildPageUrl(currentPage + 1)}
+                    class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    aria-label="Next page"
+                  >
+                    Next
+                  </a>
+                </li>
+              ) : (
+                <li>
+                  <span class="px-4 py-2 border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                    Next
+                  </span>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

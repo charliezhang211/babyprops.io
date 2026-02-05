@@ -1,0 +1,182 @@
+---
+// 📍 src/pages/ui-components-demo.astro
+// UI 组件演示页面 - 用于测试所有通用 UI 组件
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Button from '@/components/ui/Button.astro';
+import Badge from '@/components/ui/Badge.astro';
+import WhatsAppButton from '@/components/ui/WhatsAppButton.astro';
+import Breadcrumb from '@/components/ui/Breadcrumb.astro';
+
+const meta = {
+  title: 'UI Components Demo | BabyProps.io',
+  description: 'Testing all UI components',
+};
+
+const breadcrumbs = [
+  { label: 'Components', href: '/ui-components-demo' },
+];
+---
+
+<BaseLayout {meta}>
+  <main class="container mx-auto px-4 py-12">
+    <!-- 页面标题 -->
+    <h1 class="text-4xl font-serif text-brand-dark mb-2">UI Components Demo</h1>
+    <p class="text-gray-600 mb-12">Testing all BabyProps.io UI components</p>
+
+    <!-- 1. Breadcrumb 组件 -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-serif text-brand-dark mb-6">1. Breadcrumb Component</h2>
+      <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <Breadcrumb items={breadcrumbs} />
+      </div>
+    </section>
+
+    <!-- 2. Button 组件 -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-serif text-brand-dark mb-6">2. Button Component</h2>
+
+      <!-- 变体 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Variants</h3>
+        <div class="flex flex-wrap gap-4">
+          <Button variant="primary">Primary Button</Button>
+          <Button variant="secondary">Secondary Button</Button>
+          <Button variant="outline">Outline Button</Button>
+        </div>
+      </div>
+
+      <!-- 尺寸 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Sizes</h3>
+        <div class="flex flex-wrap items-center gap-4">
+          <Button size="sm">Small</Button>
+          <Button size="md">Medium</Button>
+          <Button size="lg">Large</Button>
+        </div>
+      </div>
+
+      <!-- 状态 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">States</h3>
+        <div class="flex flex-wrap gap-4">
+          <Button>Normal</Button>
+          <Button disabled>Disabled</Button>
+        </div>
+      </div>
+
+      <!-- 链接模式 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Link Mode</h3>
+        <Button href="/shop">Go to Shop</Button>
+      </div>
+
+      <!-- 全宽 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <h3 class="text-lg font-medium mb-4">Full Width</h3>
+        <Button fullWidth>Full Width Button</Button>
+      </div>
+    </section>
+
+    <!-- 3. Badge 组件 -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-serif text-brand-dark mb-6">3. Badge Component</h2>
+
+      <!-- 变体 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Variants</h3>
+        <div class="flex flex-wrap gap-4">
+          <Badge variant="new" />
+          <Badge variant="sale" />
+          <Badge variant="pro" />
+          <Badge variant="featured" />
+          <Badge variant="custom">Limited</Badge>
+        </div>
+      </div>
+
+      <!-- 尺寸 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <h3 class="text-lg font-medium mb-4">Sizes</h3>
+        <div class="flex flex-wrap items-center gap-4">
+          <Badge variant="new" size="sm" />
+          <Badge variant="new" size="md" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. WhatsAppButton 组件 -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-serif text-brand-dark mb-6">4. WhatsAppButton Component</h2>
+
+      <!-- 默认样式 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Default Style</h3>
+        <WhatsAppButton />
+      </div>
+
+      <!-- 文字样式 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200 mb-4">
+        <h3 class="text-lg font-medium mb-4">Text Style</h3>
+        <WhatsAppButton variant="text">Contact us on WhatsApp</WhatsAppButton>
+      </div>
+
+      <!-- 自定义消息 -->
+      <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <h3 class="text-lg font-medium mb-4">Custom Message</h3>
+        <WhatsAppButton message="Hi! I have a question about the Wooden Moon Bed">
+          Ask About Products
+        </WhatsAppButton>
+      </div>
+    </section>
+
+    <!-- 组合示例 -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-serif text-brand-dark mb-6">5. Combined Example (Product Card)</h2>
+      <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <div class="max-w-sm">
+          <!-- 徽章 -->
+          <div class="mb-3">
+            <Badge variant="new" size="sm" />
+          </div>
+
+          <!-- 产品图片占位 -->
+          <div class="bg-gray-200 rounded-lg mb-4 h-48 flex items-center justify-center">
+            <span class="text-gray-400">Product Image</span>
+          </div>
+
+          <!-- 产品信息 -->
+          <h3 class="text-xl font-serif text-brand-dark mb-2">Wooden Moon Bed</h3>
+          <p class="text-2xl font-medium text-brand mb-1">$89.99</p>
+          <p class="text-sm text-gray-600 mb-4">Natural Pine Wood • Newborn Size</p>
+
+          <!-- 按钮组 -->
+          <div class="space-y-2">
+            <Button fullWidth>View Details</Button>
+            <Button variant="secondary" fullWidth>Add to Cart</Button>
+          </div>
+
+          <!-- WhatsApp 询价 -->
+          <div class="mt-3 pt-3 border-t border-gray-200">
+            <WhatsAppButton
+              variant="text"
+              message="I'm interested in the Wooden Moon Bed"
+            >
+              Ask about this product
+            </WhatsAppButton>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 注意事项 -->
+    <section class="bg-brand-light p-6 rounded-lg">
+      <h3 class="text-lg font-medium mb-2">Note</h3>
+      <p class="text-gray-700">
+        This is a demo page for testing UI components.
+        浮动 WhatsApp 按钮已在右下角显示 (由 BaseLayout 提供)。
+      </p>
+    </section>
+  </main>
+</BaseLayout>

@@ -1,0 +1,295 @@
+---
+// PDP Gallery Component - Server-rendered with JS enhancement
+import Icon from "@/components/common/Icon.astro";
+
+interface Props {
+    images: string[];
+    productTitle: string;
+}
+
+const { images, productTitle } = Astro.props;
+const mainImage = images[0] || "/images/placeholder.jpg";
+const thumbnails = images.slice(0, 5);
+---
+
+<div class="flex flex-col gap-4" data-pdp="gallery" data-gallery>
+    <!-- Main Image -->
+    <div class="relative aspect-square bg-brand-light rounded-xl overflow-hidden group cursor-zoom-in" data-gallery-main>
+        <img
+            src={mainImage}
+            alt={productTitle}
+            class="w-full h-full object-cover"
+            id="gallery-main-img"
+            loading="eager"
+        />
+
+        <!-- Navigation Arrows -->
+        <button
+            class="absolute top-1/2 left-4 -translate-y-1/2 bg-brand-dark/80 hover:bg-brand text-white w-11 h-11 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer md:w-9 md:h-9 max-md:opacity-100 shadow-md hover:shadow-lg"
+            data-gallery-prev
+            aria-label="Previous image"
+        >
+            <Icon name="chevronLeft" size={24} />
+        </button>
+        <button
+            class="absolute top-1/2 right-4 -translate-y-1/2 bg-brand-dark/80 hover:bg-brand text-white w-11 h-11 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer md:w-9 md:h-9 max-md:opacity-100 shadow-md hover:shadow-lg"
+            data-gallery-next
+            aria-label="Next image"
+        >
+            <Icon name="chevronRight" size={24} />
+        </button>
+
+        <!-- Zoom hint -->
+        <button
+            class="absolute bottom-4 right-4 bg-brand-dark/80 hover:bg-brand text-white w-10 h-10 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg"
+            data-gallery-zoom
+            aria-label="Zoom image"
+        >
+            <Icon name="zoomIn" size={20} />
+        </button>
+
+        <!-- Image Counter -->
+        <div class="absolute top-4 right-4 bg-brand-dark/80 text-white text-sm px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span data-gallery-counter>1 / {images.length}</span>
+        </div>
+    </div>
+
+    <!-- Thumbnails -->
+    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {
+            thumbnails.map((img, index) => (
+                <button
+                    class:list={[
+                        "flex-shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden border-2 bg-white cursor-pointer p-0 transition-all duration-300 max-md:w-14 max-md:h-14 shadow-sm hover:shadow-md",
+                        index === 0 ? "border-brand ring-2 ring-brand/30" : "border-gray-200 hover:border-brand",
+                    ]}
+                    data-gallery-thumb={index}
+                    aria-label={`View image ${index + 1}`}
+                >
+                    <img
+                        src={img}
+                        alt={`${productTitle} - Image ${index + 1}`}
+                        loading="lazy"
+                        class="w-full h-full object-cover"
+                    />
+                </button>
+            ))
+        }
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div
+    class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm hidden items-center justify-center p-4"
+    data-gallery-lightbox
+    role="dialog"
+    aria-modal="true"
+    aria-label="Image lightbox"
+>
+    <button
+        class="absolute top-4 right-4 bg-brand-dark/80 hover:bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300 shadow-lg z-10"
+        data-lightbox-close
+        aria-label="Close lightbox"
+    >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
+    <button
+        class="absolute top-1/2 left-4 -translate-y-1/2 bg-brand-dark/80 hover:bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300 shadow-lg z-10"
+        data-lightbox-prev
+        aria-label="Previous image"
+    >
+        <Icon name="chevronLeft" size={28} />
+    </button>
+
+    <button
+        class="absolute top-1/2 right-4 -translate-y-1/2 bg-brand-dark/80 hover:bg-brand text-white w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300 shadow-lg z-10"
+        data-lightbox-next
+        aria-label="Next image"
+    >
+        <Icon name="chevronRight" size={28} />
+    </button>
+
+    <div class="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+        <img
+            src=""
+            alt=""
+            class="max-w-full max-h-full object-contain rounded-lg"
+            data-lightbox-img
+        />
+
+        <!-- Lightbox Counter -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-brand-dark/80 text-white text-sm px-4 py-2 rounded-full">
+            <span data-lightbox-counter>1 / {images.length}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gallery interactivity with lightbox
+    document.addEventListener("DOMContentLoaded", () => {
+        const gallery = document.querySelector("[data-gallery]");
+        if (!gallery) return;
+
+        const mainImg = gallery.querySelector("#gallery-main-img") as HTMLImageElement;
+        const mainContainer = gallery.querySelector("[data-gallery-main]");
+        const thumbs = gallery.querySelectorAll("[data-gallery-thumb]");
+        const prevBtn = gallery.querySelector("[data-gallery-prev]");
+        const nextBtn = gallery.querySelector("[data-gallery-next]");
+        const zoomBtn = gallery.querySelector("[data-gallery-zoom]");
+        const counter = gallery.querySelector("[data-gallery-counter]");
+
+        // Lightbox elements
+        const lightbox = document.querySelector("[data-gallery-lightbox]");
+        const lightboxImg = lightbox?.querySelector("[data-lightbox-img]") as HTMLImageElement;
+        const lightboxClose = lightbox?.querySelector("[data-lightbox-close]");
+        const lightboxPrev = lightbox?.querySelector("[data-lightbox-prev]");
+        const lightboxNext = lightbox?.querySelector("[data-lightbox-next]");
+        const lightboxCounter = lightbox?.querySelector("[data-lightbox-counter]");
+
+        let currentIndex = 0;
+        const images: string[] = [];
+        const alts: string[] = [];
+
+        // Collect all image URLs and alts from thumbnails
+        thumbs.forEach((thumb) => {
+            const img = thumb.querySelector("img") as HTMLImageElement;
+            if (img?.src) {
+                images.push(img.src);
+                alts.push(img.alt || "");
+            }
+        });
+
+        function updateCounter() {
+            const counterText = `${currentIndex + 1} / ${images.length}`;
+            if (counter) counter.textContent = counterText;
+            if (lightboxCounter) lightboxCounter.textContent = counterText;
+        }
+
+        function updateGallery(index: number) {
+            if (index < 0) index = images.length - 1;
+            if (index >= images.length) index = 0;
+
+            currentIndex = index;
+            if (mainImg && images[index]) {
+                mainImg.src = images[index];
+                mainImg.alt = alts[index];
+            }
+
+            // Update thumbnails
+            thumbs.forEach((thumb, i) => {
+                if (i === index) {
+                    thumb.classList.remove("border-gray-200", "hover:border-brand");
+                    thumb.classList.add("border-brand", "ring-2", "ring-brand/30");
+                } else {
+                    thumb.classList.remove("border-brand", "ring-2", "ring-brand/30");
+                    thumb.classList.add("border-gray-200", "hover:border-brand");
+                }
+            });
+
+            updateCounter();
+        }
+
+        function openLightbox() {
+            if (lightbox && lightboxImg && images[currentIndex]) {
+                lightboxImg.src = images[currentIndex];
+                lightboxImg.alt = alts[currentIndex];
+                lightbox.classList.remove("hidden");
+                lightbox.classList.add("flex");
+                document.body.style.overflow = "hidden";
+                updateCounter();
+            }
+        }
+
+        function closeLightbox() {
+            if (lightbox) {
+                lightbox.classList.add("hidden");
+                lightbox.classList.remove("flex");
+                document.body.style.overflow = "";
+            }
+        }
+
+        function updateLightboxImage(index: number) {
+            if (index < 0) index = images.length - 1;
+            if (index >= images.length) index = 0;
+
+            currentIndex = index;
+            if (lightboxImg && images[index]) {
+                lightboxImg.src = images[index];
+                lightboxImg.alt = alts[index];
+            }
+            updateCounter();
+        }
+
+        // Thumbnail clicks
+        thumbs.forEach((thumb, index) => {
+            thumb.addEventListener("click", () => updateGallery(index));
+        });
+
+        // Arrow navigation
+        prevBtn?.addEventListener("click", () => updateGallery(currentIndex - 1));
+        nextBtn?.addEventListener("click", () => updateGallery(currentIndex + 1));
+
+        // Zoom/Lightbox
+        zoomBtn?.addEventListener("click", openLightbox);
+        mainContainer?.addEventListener("click", (e) => {
+            if (e.target === mainImg) openLightbox();
+        });
+
+        // Lightbox controls
+        lightboxClose?.addEventListener("click", closeLightbox);
+        lightboxPrev?.addEventListener("click", () => updateLightboxImage(currentIndex - 1));
+        lightboxNext?.addEventListener("click", () => updateLightboxImage(currentIndex + 1));
+
+        // Close lightbox on backdrop click
+        lightbox?.addEventListener("click", (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+
+        // Keyboard navigation
+        document.addEventListener("keydown", (e) => {
+            if (lightbox?.classList.contains("flex")) {
+                if (e.key === "Escape") closeLightbox();
+                if (e.key === "ArrowLeft") updateLightboxImage(currentIndex - 1);
+                if (e.key === "ArrowRight") updateLightboxImage(currentIndex + 1);
+            }
+        });
+
+        // Initialize counter
+        updateCounter();
+
+        // Listen for variant changes from Configurator
+        window.addEventListener("variant-image-change", ((e: CustomEvent) => {
+            if (e.detail?.image && mainImg) {
+                mainImg.src = e.detail.image;
+            }
+        }) as EventListener);
+    });
+</script>
+
+<style>
+    /* Hide scrollbar for thumbnails */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Smooth lightbox backdrop animation */
+    [data-gallery-lightbox] {
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>

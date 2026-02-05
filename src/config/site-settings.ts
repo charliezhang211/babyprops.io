@@ -1,0 +1,196 @@
+/**
+ * Site Settings - Global UI & Business Configuration
+ * 全局中控台 - 集中管理站点级别的 UI 文案和业务配置
+ *
+ * @see CLAUDE.md Section 7.1 for configuration reference
+ */
+
+export const siteSettings = {
+  // 品牌信息
+  siteName: 'Dvotinst',
+  siteUrl: 'https://babyprops.io',
+  tagline: 'Premium Newborn Photography Props',
+
+  // 联系方式
+  contact: {
+    email: 'dvotinst@gmail.com',
+    phone: '+86 158 20669823',
+    whatsapp: '8615820669823',
+    whatsappUrl: 'https://wa.me/8615820669823',
+    address: 'Shenzhen, China',
+  },
+
+  // 社交媒体
+  social: {
+    instagram: 'https://instagram.com/dvotinst',
+    facebook: 'https://facebook.com/dvotinst',
+    pinterest: 'https://pinterest.com/dvotinst',
+  },
+
+  // 运营文案
+  copy: {
+    heroTitle: 'Capture the Perfect Moment',
+    heroSubtitle: 'Premium Newborn Photography Props',
+    heroDescription: 'Serving Professional Photographers Worldwide for 8 Years',
+    ctaText: 'Shop Now',
+    trustBadges: [
+      { icon: 'globe', text: 'Worldwide Shipping' },
+      { icon: 'clock', text: '8 Years Experience' },
+      { icon: 'shield', text: 'Secure Checkout' },
+    ],
+  },
+
+  // 功能开关
+  features: {
+    enableReviews: true,
+    enableWishlist: false,
+    enableCoupons: true,
+    enableNewsletter: true,
+  },
+
+  // 货币配置
+  currency: 'USD',
+  pdp: {
+    quantityLabel: 'Quantity',
+    variantLabel: 'Options',
+    buyNowButton: 'Buy It Now',
+    addToCartButton: 'Add to Cart',
+  },
+  cart: {
+    pageTitle: 'Shopping Cart',
+    emptyTitle: 'Your cart is empty',
+    emptyDescription: 'Looks like you haven\'t added anything yet.',
+    continueShoppingButton: 'Continue Shopping',
+    clearCartButton: 'Clear Cart',
+    clearCartConfirm: 'Are you sure you want to clear your cart?',
+    quantityLabel: 'Qty',
+    removeLabel: 'Remove',
+    subtotalLabel: 'Subtotal',
+    shippingLabel: 'Shipping',
+    shippingFree: 'FREE',
+    totalLabel: 'Total',
+    orderSummaryTitle: 'Order Summary',
+    checkoutButton: 'Proceed to Checkout',
+    validatingButton: 'Validating…',
+    priceUpdateNotice: 'Some prices have been updated. Please review your cart before checkout.',
+    trustBadge: 'Secure checkout powered by PayPal',
+    skuLabel: 'SKU',
+  },
+  checkout: {
+    pageTitle: 'Checkout',
+    backToCart: 'Back to Cart',
+    shippingTitle: 'Shipping Address',
+    useSavedAddress: 'Use saved address',
+    enterNewAddress: 'Enter new address',
+    defaultBadge: 'Default',
+    firstNameLabel: 'First Name',
+    lastNameLabel: 'Last Name',
+    emailLabel: 'Email',
+    phoneLabel: 'Phone',
+    address1Label: 'Street Address',
+    address1Placeholder: 'House number and street name',
+    address2Label: 'Apartment, suite, etc. (optional)',
+    cityLabel: 'City',
+    stateLabel: 'State / Province',
+    selectStateLabel: 'Select State',
+    postcodeLabel: 'ZIP / Postal Code',
+    countryLabel: 'Country',
+    orderSummaryTitle: 'Order Summary',
+    paymentTitle: 'Payment',
+    guestNotice: 'for faster checkout or continue as guest.',
+    guestSignIn: 'Sign in',
+    addressRequired: 'Please complete your shipping address to continue.',
+    addressInvalidError: 'Please fill in all required shipping fields.',
+    processingLabel: 'Processing your order…',
+    trustBadge: 'Secure checkout powered by PayPal',
+    redirectingLabel: 'Redirecting to cart…',
+    // Coupon
+    couponLabel: 'Discount Code',
+    couponPlaceholder: 'Enter coupon code',
+    couponApplyButton: 'Apply',
+    couponApplyingButton: 'Applying…',
+    couponRemoveButton: 'Remove',
+    couponDiscountLabel: 'Discount',
+  },
+  thankYou: {
+    pageTitle: 'Order Confirmed',
+    heroTitle: 'Thank You for Your Order!',
+    heroSubtitle: 'Your order has been successfully placed.',
+    orderNumberLabel: 'Order Number',
+    emailSentTitle: 'Confirmation Email Sent',
+    emailSentDescription: "We've sent an order confirmation to",
+    whatsNextTitle: "What's Next?",
+    step1Title: 'Order Processing',
+    step1Description: "We'll prepare your items for shipment within 1-3 business days.",
+    step2Title: 'Shipping Notification',
+    step2Description: "You'll receive a tracking number once your order ships.",
+    step3Title: 'Delivery',
+    step3Description: 'Standard delivery takes 7-15 business days depending on your location.',
+    guestAccountSuggestion: 'Want to track your order?',
+    createAccountLink: 'Create an account',
+    guestAccountBenefit: 'to view order history and save your shipping details for faster checkout.',
+    supportTitle: 'Need help?',
+    supportText: 'Contact us via',
+    continueShoppingButton: 'Continue Shopping',
+    viewOrdersButton: 'View Orders',
+  },
+  // Auth Pages
+  auth: {
+    login: {
+      title: 'Welcome Back',
+      subtitle: 'Sign in to your account to continue',
+      submitButton: 'Sign In',
+      loadingButton: 'Signing in...',
+      forgotPasswordLink: 'Forgot password?',
+      noAccountText: "Don't have an account?",
+      createAccountLink: 'Create one',
+      trustBadge: 'Secure login with SSL encryption',
+    },
+    register: {
+      title: 'Create Account',
+      subtitle: 'Join our community of professional photographers',
+      submitButton: 'Create Account',
+      loadingButton: 'Creating account...',
+      hasAccountText: 'Already have an account?',
+      signInLink: 'Sign in',
+      termsText: 'I agree to the',
+      termsLink: 'Terms of Service',
+      privacyLink: 'Privacy Policy',
+      trustBadge: 'Your data is protected and never shared',
+    },
+    forgotPassword: {
+      title: 'Forgot Password?',
+      subtitle: "No worries, we'll help you reset it",
+      description: "Enter your email address and we'll send you a link to reset your password.",
+      submitButton: 'Send Reset Link',
+      loadingButton: 'Sending...',
+      backToLogin: 'Back to Sign In',
+      successTitle: 'Check your email!',
+      successMessage: "We've sent password reset instructions to",
+    },
+    resetPassword: {
+      title: 'Set New Password',
+      subtitle: 'Create a secure password for your account',
+      submitButton: 'Update Password',
+      loadingButton: 'Updating...',
+      successTitle: 'Password updated!',
+      successMessage: 'Your password has been changed successfully. Redirecting to your account...',
+    },
+  },
+  // Order Lookup (Guest)
+  orderLookup: {
+    pageTitle: 'Track Your Order',
+    heroTitle: 'Track Your Order',
+    heroSubtitle: 'Enter your order number and email address to view your order status.',
+    orderNumberLabel: 'Order Number',
+    orderNumberPlaceholder: 'e.g. ORD-20260205-XXXX',
+    emailLabel: 'Email Address',
+    emailPlaceholder: 'Email used during checkout',
+    submitButton: 'Track Order',
+    loadingButton: 'Looking up...',
+    notFoundTitle: 'Order Not Found',
+    notFoundMessage: "We couldn't find an order matching the details you provided. Please check your order number and email, then try again.",
+    helpText: "Can't find your order?",
+    helpContactText: 'Contact our support team for assistance.',
+  },
+};

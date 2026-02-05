@@ -1,0 +1,59 @@
+---
+// 📍 src/components/ui/Badge.astro
+// 通用徽章组件 - 用于产品卡片上的标签 (New/Sale/Pro)
+
+interface Props {
+  variant?: 'new' | 'sale' | 'pro' | 'featured' | 'custom';
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+const {
+  variant = 'new',
+  size = 'md',
+  class: className = '',
+} = Astro.props;
+
+// 基础样式
+const baseStyles = 'inline-flex items-center justify-center font-medium uppercase tracking-wide';
+
+// 变体样式
+const variantStyles = {
+  new: 'bg-brand-accent text-white',
+  sale: 'bg-red-500 text-white',
+  pro: 'bg-brand-dark text-white',
+  featured: 'bg-brand text-white',
+  custom: 'bg-gray-500 text-white',
+};
+
+// 尺寸样式
+const sizeStyles = {
+  sm: 'px-2 py-0.5 text-xs rounded',
+  md: 'px-3 py-1 text-sm rounded-md',
+};
+
+// 默认文本
+const defaultText = {
+  new: 'New',
+  sale: 'Sale',
+  pro: 'Pro',
+  featured: 'Featured',
+  custom: '',
+};
+
+// 组合样式
+const badgeClass = [
+  baseStyles,
+  variantStyles[variant],
+  sizeStyles[size],
+  className,
+].join(' ');
+---
+
+<span
+  class={badgeClass}
+  data-component="badge"
+  data-variant={variant}
+>
+  <slot>{defaultText[variant]}</slot>
+</span>
