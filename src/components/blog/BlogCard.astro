@@ -1,0 +1,135 @@
+---
+/**
+ * BlogCard - 文章卡片组件
+ *
+ * 功能:
+ * - 封面图 + 分类标签悬浮
+ * - 标题 + 摘要
+ * - 发布日期 + 阅读时间
+ * - 悬停动效
+ *
+ * @see TASKS-BLOG.md Task-B.6
+ */
+
+interface Props {
+    title: string;
+    slug: string;
+    excerpt: string;
+    featuredImage: string;
+    category: string;
+    publishedDate: Date;
+    readingTime?: number;
+}
+
+const {
+    title,
+    slug,
+    excerpt,
+    featuredImage,
+    category,
+    publishedDate,
+    readingTime,
+} = Astro.props;
+
+// Format category for display
+const categoryLabels: Record<string, string> = {
+    "photography-tips": "Photography Tips",
+    "prop-guides": "Prop Guides",
+    "styling-inspiration": "Styling Inspiration",
+    "industry-news": "Industry News",
+    "behind-the-scenes": "Behind the Scenes",
+};
+
+const categoryLabel = categoryLabels[category] || category;
+
+// Format date
+const formattedDate = publishedDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+});
+
+// Build the link URL
+const postUrl = `/blog/${slug}`;
+---
+
+<article
+    class="blog-card group bg-white rounded-2xl p-4 transition-all duration-300 hover:shadow-lg hover:shadow-brand/10 hover:-translate-y-1"
+>
+    <a href={postUrl} class="block cursor-pointer" data-astro-prefetch>
+        <!-- Image Container -->
+        <div
+            class="relative aspect-[16/10] overflow-hidden rounded-xl mb-4 bg-gray-100"
+        >
+            <img
+                src={featuredImage || "/images/blog/placeholder.webp"}
+                alt={title}
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+            />
+            <!-- Category Badge -->
+            <span
+                class="absolute top-3 left-3 bg-white/90 text-brand-dark text-xs font-medium px-3 py-1.5 rounded-full shadow-sm pointer-events-none"
+            >
+                {categoryLabel}
+            </span>
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-2">
+            <!-- Title -->
+            <h3
+                class="text-lg font-serif font-semibold text-gray-700 group-hover:text-brand transition-colors line-clamp-2"
+            >
+                {title}
+            </h3>
+
+            <!-- Excerpt -->
+            <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                {excerpt}
+            </p>
+
+            <!-- Meta -->
+            <div class="flex items-center gap-3 text-xs text-gray-500 pt-2">
+                <!-- Date -->
+                <span class="flex items-center gap-1">
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        ></path>
+                    </svg>
+                    {formattedDate}
+                </span>
+
+                {
+                    readingTime && (
+                        <span class="flex items-center gap-1">
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            {readingTime} min read
+                        </span>
+                    )
+                }
+            </div>
+        </div>
+    </a>
+</article>

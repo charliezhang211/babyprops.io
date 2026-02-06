@@ -1,0 +1,367 @@
+---
+/**
+ * Blog Post Page - 文章详情页 (SSR Mode)
+ *
+ * 功能:
+ * - 动态路由渲染博客文章
+ * - 响应式两栏布局 (正文 + 侧边栏)
+ * - TOC 目录组件
+ * - Author Box 作者信息
+ * - 相关文章推荐
+ * - Schema.org Article 结构化数据
+ *
+ * @see TASKS-BLOG.md Task-B.2
+ */
+
+import { getCollection, render } from "astro:content";
+import BaseLayout from "@/components/layout/BaseLayout.astro";
+import AuthorBox from "@/components/blog/AuthorBox.astro";
+import BlogCard from "@/components/blog/BlogCard.astro";
+import TableOfContents from "@/components/blog/TableOfContents";
+import { siteSettings } from "@/config/site-settings";
+import { authors } from "@/config/authors";
+
+// Get slug from URL params (SSR mode)
+const { slug } = Astro.params;
+
+// Find the post by slug
+const allPosts = await getCollection("blog");
+const post = allPosts.find((p) => p.data.slug === slug);
+
+// 404 if post not found
+if (!post) {
+    return Astro.redirect("/blog");
+}
+
+const { Content, headings } = await render(post);
+
+// Filter H2 headings for TOC
+const tocHeadings = headings
+    .filter((h) => h.depth === 2)
+    .map((h) => ({
+        text: h.text,
+        slug: h.slug,
+        depth: h.depth,
+    }));
+
+// Category labels for display
+const categoryLabels: Record<string, string> = {
+    "photography-tips": "Photography Tips",
+    "prop-guides": "Prop Guides",
+    "styling-inspiration": "Styling Inspiration",
+    "industry-news": "Industry News",
+    "behind-the-scenes": "Behind the Scenes",
+};
+
+const categoryLabel = categoryLabels[post.data.category] || post.data.category;
+
+// Format dates
+const publishedDate = post.data.published_date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+});
+
+// Get related posts (same category, excluding current)
+const relatedPosts = allPosts
+    .filter(
+        (p) =>
+            p.data.category === post.data.category &&
+            p.data.slug !== post.data.slug,
+    )
+    .slice(0, 3);
+
+// If not enough related by category, fill with featured
+if (relatedPosts.length < 3) {
+    const featuredPosts = allPosts
+        .filter((p) => p.data.is_featured && p.data.slug !== post.data.slug)
+        .slice(0, 3 - relatedPosts.length);
+    relatedPosts.push(...featuredPosts);
+}
+
+// SEO Meta
+const meta = {
+    title: post.data.meta_title || `${post.data.title} | Dvotinst Blog`,
+    description: post.data.meta_description || post.data.excerpt,
+    image: `${siteSettings.siteUrl}${post.data.featured_image}`,
+    url: `${siteSettings.siteUrl}/blog/${post.data.slug}`,
+    type: "article" as const,
+};
+
+// Schema.org Article structured data
+const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.data.title,
+    description: post.data.excerpt,
+    image: `${siteSettings.siteUrl}${post.data.featured_image}`,
+    datePublished: post.data.published_date.toISOString(),
+    dateModified:
+        post.data.updated_date?.toISOString() ||
+        post.data.published_date.toISOString(),
+    author: {
+        "@type": "Person",
+        name: authors[post.data.author]?.name || "Dvotinst Team",
+    },
+    publisher: {
+        "@type": "Organization",
+        name: siteSettings.siteName,
+        logo: {
+            "@type": "ImageObject",
+            url: `${siteSettings.siteUrl}/images/brand/logo.png`,
+        },
+    },
+    mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": `${siteSettings.siteUrl}/blog/${post.data.slug}`,
+    },
+};
+---
+
+<BaseLayout meta={meta}>
+    <!-- Schema.org Article -->
+    <script
+        type="application/ld+json"
+        set:html={JSON.stringify(articleSchema)}
+    />
+
+    <main class="min-h-screen bg-gradient-to-b from-brand-light/30 to-white">
+        <!-- Breadcrumb -->
+        <div class="container mx-auto px-4 py-4">
+            <nav class="text-sm text-brand-dark/60" aria-label="Breadcrumb">
+                <ol class="flex items-center gap-2 flex-wrap">
+                    <li>
+                        <a href="/" class="hover:text-brand transition-colors"
+                            >Home</a
+                        >
+                    </li>
+                    <li class="text-brand-dark/40">/</li>
+                    <li>
+                        <a
+                            href="/blog"
+                            class="hover:text-brand transition-colors">Blog</a
+                        >
+                    </li>
+                    <li class="text-brand-dark/40">/</li>
+                    <li>
+                        <a
+                            href={`/blog/category/${post.data.category}`}
+                            class="hover:text-brand transition-colors"
+                            >{categoryLabel}</a
+                        >
+                    </li>
+                    <li class="text-brand-dark/40">/</li>
+                    <li class="text-brand-dark truncate max-w-[200px]">
+                        {post.data.title}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Featured Image removed - only shown in archive cards -->
+
+        <!-- Article Header -->
+        <div class="container mx-auto px-4 mb-8">
+            <div class="max-w-4xl mx-auto text-center">
+                <!-- Meta -->
+                <div
+                    class="flex items-center justify-center gap-4 mb-4 text-sm"
+                >
+                    <span
+                        class="bg-brand/10 text-brand px-3 py-1 rounded-full font-medium"
+                    >
+                        {categoryLabel}
+                    </span>
+                    {
+                        post.data.reading_time && (
+                            <span class="text-gray-600 flex items-center gap-1">
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                {post.data.reading_time} min read
+                            </span>
+                        )
+                    }
+                    <span class="text-gray-600">{publishedDate}</span>
+                </div>
+
+                <!-- Title -->
+                <h1
+                    class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-brand-dark leading-tight mb-4"
+                >
+                    {post.data.title}
+                </h1>
+
+                <!-- Excerpt -->
+                <p class="text-lg text-gray-700 max-w-2xl mx-auto">
+                    {post.data.excerpt}
+                </p>
+            </div>
+        </div>
+
+        <!-- Content + Sidebar -->
+        <div class="container mx-auto px-4 pb-16">
+            <div
+                class="flex flex-col lg:flex-row gap-8 lg:gap-12 max-w-6xl mx-auto"
+            >
+                <!-- Main Content -->
+                <article class="flex-1 min-w-0">
+                    <!-- Mobile TOC -->
+                    <div class="lg:hidden mb-6 sticky top-20 z-10">
+                        <TableOfContents client:load headings={tocHeadings} />
+                    </div>
+
+                    <!-- Article Body -->
+                    <div
+                        class="prose prose-lg prose-brand max-w-none bg-white rounded-2xl p-6 md:p-10 shadow-sm"
+                    >
+                        <Content />
+                    </div>
+
+                    <!-- Tags -->
+                    {
+                        post.data.tags && post.data.tags.length > 0 && (
+                            <div class="mt-8 flex flex-wrap gap-2">
+                                {post.data.tags.map((tag: string) => (
+                                    <span class="bg-brand-light/70 text-gray-700 text-sm px-3 py-1.5 rounded-full hover:bg-brand-light transition-colors font-medium">
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )
+                    }
+
+                    <!-- Author Box (Mobile) -->
+                    <div class="mt-8 lg:hidden">
+                        <AuthorBox authorId={post.data.author} />
+                    </div>
+                </article>
+
+                <!-- Sidebar -->
+                <aside class="lg:w-72 xl:w-80 flex-shrink-0">
+                    <div class="lg:sticky lg:top-24 space-y-6">
+                        <!-- Desktop TOC -->
+                        <div class="hidden lg:block">
+                            <TableOfContents
+                                client:load
+                                headings={tocHeadings}
+                            />
+                        </div>
+
+                        <!-- Author Box (Desktop) -->
+                        <div class="hidden lg:block">
+                            <AuthorBox authorId={post.data.author} />
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- Related Articles -->
+        {
+            relatedPosts.length > 0 && (
+                <section class="bg-brand-light/30 py-16">
+                    <div class="container mx-auto px-4">
+                        <h2 class="text-2xl md:text-3xl font-serif font-bold text-brand-dark text-center mb-10">
+                            Related Articles
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                            {relatedPosts.map((relatedPost) => (
+                                <BlogCard
+                                    title={relatedPost.data.title}
+                                    slug={relatedPost.data.slug}
+                                    excerpt={relatedPost.data.excerpt}
+                                    featuredImage={
+                                        relatedPost.data.featured_image
+                                    }
+                                    category={relatedPost.data.category}
+                                    publishedDate={
+                                        relatedPost.data.published_date
+                                    }
+                                    readingTime={relatedPost.data.reading_time}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )
+        }
+    </main>
+</BaseLayout>
+
+<style is:global>
+    /* Prose styling for blog content */
+    .prose-brand {
+        --tw-prose-body: theme("colors.brand.dark / 85%");
+        --tw-prose-headings: theme("colors.brand.dark");
+        --tw-prose-links: theme("colors.brand.DEFAULT");
+        --tw-prose-bold: theme("colors.brand.dark");
+        --tw-prose-quotes: theme("colors.brand.dark / 80%");
+        --tw-prose-quote-borders: theme("colors.brand.DEFAULT / 30%");
+    }
+
+    .prose-brand h2 {
+        @apply text-2xl font-serif font-bold mt-10 mb-4 pb-2 border-b border-brand/20;
+        scroll-margin-top: 100px;
+    }
+
+    .prose-brand h3 {
+        @apply text-xl font-serif font-semibold mt-8 mb-3;
+    }
+
+    .prose-brand p {
+        @apply mb-4 leading-relaxed;
+    }
+
+    .prose-brand a {
+        @apply text-brand hover:text-brand-dark underline underline-offset-2 transition-colors;
+    }
+
+    .prose-brand ul,
+    .prose-brand ol {
+        @apply my-4 pl-6;
+    }
+
+    .prose-brand li {
+        @apply mb-2;
+    }
+
+    .prose-brand blockquote {
+        @apply border-l-4 border-brand/30 pl-4 italic text-brand-dark/80 my-6;
+    }
+
+    .prose-brand code {
+        @apply bg-brand-light/50 px-1.5 py-0.5 rounded text-sm;
+    }
+
+    .prose-brand pre {
+        @apply bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto my-6;
+    }
+
+    .prose-brand img {
+        @apply rounded-xl shadow-md my-6;
+    }
+
+    .prose-brand table {
+        @apply w-full border-collapse my-6;
+    }
+
+    .prose-brand th,
+    .prose-brand td {
+        @apply border border-brand/20 px-4 py-2 text-left;
+    }
+
+    .prose-brand th {
+        @apply bg-brand-light/50 font-semibold;
+    }
+</style>

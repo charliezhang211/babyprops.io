@@ -16,6 +16,48 @@ const categoryEnum = z.enum([
   'mini-creative-props'
 ]);
 
+// Blog Category Enum
+const blogCategoryEnum = z.enum([
+  'photography-tips',      // 摄影技巧
+  'prop-guides',           // 道具指南
+  'styling-inspiration',   // 搭配灵感
+  'industry-news',         // 行业资讯
+  'behind-the-scenes'      // 幕后故事
+]);
+
+// Blog Collection Schema
+const blog = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
+  schema: z.object({
+    // Basic Information
+    title: z.string(),
+    slug: z.string(),
+    excerpt: z.string(),                    // 摘要 (150字)
+    featured_image: z.string(),             // 封面图
+
+    // Category & Tags
+    category: blogCategoryEnum,
+    tags: z.array(z.string()).optional(),
+
+    // Author (fixed to tira-chan for now)
+    author: z.literal('tira-chan').default('tira-chan'),
+
+    // Dates
+    published_date: z.coerce.date(),
+    updated_date: z.coerce.date().optional(),
+
+    // Reading Time
+    reading_time: z.number().optional(),    // 阅读时间 (分钟)
+
+    // Status
+    is_featured: z.boolean().default(false),
+
+    // SEO
+    meta_title: z.string().optional(),
+    meta_description: z.string().optional(),
+  }),
+});
+
 // Product Collection Schema
 const products = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/products" }),
@@ -79,5 +121,7 @@ const products = defineCollection({
   }),
 });
 
-export const collections = { products };
+export const collections = { products, blog };
 export type Category = z.infer<typeof categoryEnum>;
+export type BlogCategory = z.infer<typeof blogCategoryEnum>;
+

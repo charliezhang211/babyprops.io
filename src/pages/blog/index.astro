@@ -1,0 +1,187 @@
+---
+/**
+ * Blog Archive Page - 博客归档页
+ *
+ * 功能:
+ * - 显示所有博客文章
+ * - 分类侧边栏菜单
+ * - 文章卡片网格
+ * - 响应式布局
+ *
+ * @see TASKS-BLOG.md Task-B.5
+ */
+
+import { getCollection } from "astro:content";
+import BaseLayout from "@/components/layout/BaseLayout.astro";
+import BlogCard from "@/components/blog/BlogCard.astro";
+import { siteSettings } from "@/config/site-settings";
+
+// Get all blog posts sorted by published date (newest first)
+const allPosts = await getCollection("blog");
+const posts = allPosts.sort(
+    (a, b) => b.data.published_date.getTime() - a.data.published_date.getTime(),
+);
+
+// Count posts per category
+const categoryLabels: Record<string, string> = {
+    "photography-tips": "Photography Tips",
+    "prop-guides": "Prop Guides",
+    "styling-inspiration": "Styling Inspiration",
+    "industry-news": "Industry News",
+    "behind-the-scenes": "Behind the Scenes",
+};
+
+const categoryCounts = allPosts.reduce(
+    (acc, post) => {
+        acc[post.data.category] = (acc[post.data.category] || 0) + 1;
+        return acc;
+    },
+    {} as Record<string, number>,
+);
+
+// SEO Meta
+const meta = {
+    title: "Blog | Newborn Photography Tips & Guides | Dvotinst",
+    description:
+        "Tips, guides, and inspiration for newborn photography professionals. Learn posing techniques, prop styling, and industry insights from Dvotinst.",
+    url: `${siteSettings.siteUrl}/blog`,
+    type: "website" as const,
+};
+---
+
+<BaseLayout meta={meta}>
+    <main class="min-h-screen bg-gradient-to-b from-brand-light/30 to-white">
+        <!-- Breadcrumb -->
+        <div class="container mx-auto px-4 py-4">
+            <nav class="text-sm text-gray-500" aria-label="Breadcrumb">
+                <ol class="flex items-center gap-2">
+                    <li>
+                        <a href="/" class="hover:text-brand transition-colors"
+                            >Home</a
+                        >
+                    </li>
+                    <li class="text-brand-dark/40">/</li>
+                    <li class="text-brand-dark">Blog</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Page Header -->
+        <div class="container mx-auto px-4 py-8 text-center">
+            <h1
+                class="text-4xl md:text-5xl font-serif font-bold text-brand-dark mb-4"
+            >
+                From the Blog
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Tips, guides, and inspiration for newborn photography
+                professionals.
+            </p>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="container mx-auto px-4 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
+                <!-- Sidebar - Categories -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <!-- Mobile: Dropdown -->
+                    <div class="lg:hidden mb-6">
+                        <select
+                            id="category-select"
+                            class="w-full bg-white border border-brand/20 rounded-xl px-4 py-3 text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/30"
+                            onchange="window.location.href = this.value"
+                        >
+                            <option value="/blog" selected
+                                >All Categories ({posts.length})</option
+                            >
+                            {
+                                Object.entries(categoryLabels).map(
+                                    ([slug, label]) => (
+                                        <option
+                                            value={`/blog/category/${slug}`}
+                                        >
+                                            {label} ({categoryCounts[slug] || 0}
+                                            )
+                                        </option>
+                                    ),
+                                )
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Desktop: Sidebar Menu -->
+                    <div class="hidden lg:block sticky top-24">
+                        <div
+                            class="bg-white rounded-2xl p-6 shadow-sm border border-brand/10"
+                        >
+                            <h3
+                                class="text-lg font-serif font-semibold text-gray-800 mb-4"
+                            >
+                                Categories
+                            </h3>
+                            <ul class="space-y-2">
+                                <li>
+                                    <a
+                                        href="/blog"
+                                        class="flex items-center justify-between px-3 py-2 rounded-lg bg-brand/10 text-brand font-medium"
+                                    >
+                                        <span>All</span>
+                                        <span
+                                            class="text-sm bg-brand/20 px-2 py-0.5 rounded-full"
+                                            >{posts.length}</span
+                                        >
+                                    </a>
+                                </li>
+                                {
+                                    Object.entries(categoryLabels).map(
+                                        ([slug, label]) => (
+                                            <li>
+                                                <a
+                                                    href={`/blog/category/${slug}`}
+                                                    class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900 transition-colors"
+                                                >
+                                                    <span>{label}</span>
+                                                    <span class="text-sm text-gray-500">
+                                                        {categoryCounts[slug] ||
+                                                            0}
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        ),
+                                    )
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Posts Grid -->
+                <div class="flex-1">
+                    {
+                        posts.length === 0 ? (
+                            <div class="text-center py-16">
+                                <p class="text-brand-dark/60 text-lg">
+                                    No posts yet. Check back soon!
+                                </p>
+                            </div>
+                        ) : (
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {posts.map((post) => (
+                                    <BlogCard
+                                        title={post.data.title}
+                                        slug={post.data.slug}
+                                        excerpt={post.data.excerpt}
+                                        featuredImage={post.data.featured_image}
+                                        category={post.data.category}
+                                        publishedDate={post.data.published_date}
+                                        readingTime={post.data.reading_time}
+                                    />
+                                ))}
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </main>
+</BaseLayout>
