@@ -13,6 +13,7 @@ interface Props {
   showQuickAdd?: boolean;
   class?: string;
   loading?: "lazy" | "eager";
+  prefetch?: "load" | "viewport" | "hover" | "tap";
 }
 
 const {
@@ -20,6 +21,7 @@ const {
   showQuickAdd = false,
   class: className = "",
   loading = "lazy",
+  prefetch,
 } = Astro.props;
 
 const { data } = product;
@@ -48,6 +50,7 @@ const badge = data.is_new ? "new" : data.is_featured ? "featured" : null;
   <a
     href={productUrl}
     class="block relative aspect-square overflow-hidden bg-brand-light/20"
+    {...prefetch ? { "data-astro-prefetch": prefetch } : {}}
   >
     {/* 徽章 (左上角) */}
     {
@@ -99,7 +102,7 @@ const badge = data.is_new ? "new" : data.is_featured ? "featured" : null;
   {/* 产品信息 */}
   <div class="p-4">
     {/* 产品标题 */}
-    <a href={productUrl} class="block mb-1.5 group/title">
+    <a href={productUrl} class="block mb-1.5 group/title" {...prefetch ? { "data-astro-prefetch": prefetch } : {}}>
       <h3
         class="text-base font-medium text-gray-900 line-clamp-2 group-hover/title:text-brand transition-colors"
       >

@@ -57,6 +57,7 @@ if (featuredProducts.length === 0) {
           product={product}
           showQuickAdd={false}
           loading={index < 4 ? 'eager' : 'lazy'}
+          prefetch="load"
           class="h-full"
         />
       ))}

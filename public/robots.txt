@@ -1,0 +1,21 @@
+# robots.txt for babyprops.io
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+
+# Allow all public pages
+Allow: /
+
+# Disallow private and utility routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-lookup
+Disallow: /thank-you
+Disallow: /ui-components-demo
+
+# Sitemap location
+Sitemap: https://babyprops.io/sitemap-index.xml

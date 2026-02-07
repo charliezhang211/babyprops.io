@@ -126,6 +126,7 @@ const hasProducts = products.length > 0;
           product={product}
           showQuickAdd={showQuickAdd}
           loading={index < 4 ? 'eager' : 'lazy'}
+          prefetch="viewport"
         />
       ))}
     </div>
