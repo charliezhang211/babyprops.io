@@ -188,7 +188,6 @@ export interface OrderRow {
   visitor_id: string;
   user_id: string | null;
   email: string;
-  woo_order_id: number | null;
   paypal_order_id: string | null;
   paypal_capture_id: string | null;
   shipping_address: ShippingAddressSnapshot;
@@ -213,7 +212,6 @@ export interface OrderInsert {
   visitor_id: string;
   user_id?: string | null;
   email: string;
-  woo_order_id?: number | null;
   paypal_order_id?: string | null;
   shipping_address: ShippingAddressSnapshot;
   subtotal: number;
@@ -228,7 +226,6 @@ export interface OrderInsert {
 
 export interface OrderUpdate {
   user_id?: string | null;
-  woo_order_id?: number | null;
   paypal_order_id?: string | null;
   paypal_capture_id?: string | null;
   status?: OrderStatus;

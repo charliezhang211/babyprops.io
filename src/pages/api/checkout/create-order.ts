@@ -11,7 +11,8 @@
 
 import type { APIRoute } from 'astro';
 import { createServerSupabase, type CartItemDB } from '@/lib/supabase';
-import { createPayPalOrder } from '@/lib/paypal';
+import { createPayment } from '@/lib/payments';
+import { CURRENCY } from '@/config/site';
 import { getCollection } from 'astro:content';
 
 interface CheckoutRequest {
@@ -53,7 +54,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     // Load product data for price validation
     const products = await getCollection('products');
-    const productMap = new Map(products.map(p => [p.slug, p.data]));
+    const productMap = new Map(products.map(p => [p.data.slug, p.data]));
 
     // Validate and calculate prices
     const validatedItems: CartItemDB[] = [];
@@ -71,44 +72,16 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         });
       }
 
-      // Find the variant price
+      // Find the variant price modifier
       let basePrice = product.basePrice;
       if (item.variant && product.variants) {
         const variant = product.variants.find(v => v.name === item.variant);
-        if (variant?.priceModifier) {
-          basePrice += variant.priceModifier;
+        if (variant?.price_mod) {
+          basePrice += variant.price_mod;
         }
       }
 
-      // Add size modifier
-      if (item.size && product.sizes) {
-        const size = product.sizes.find(s => s.name === item.size);
-        if (size?.priceModifier) {
-          basePrice += size.priceModifier;
-        }
-      }
-
-      // Add stripe price
-      let stripePrice = 0;
-      if (item.stripe && product.stripes) {
-        const stripe = product.stripes.find((s: { id: string; price?: number }) => s.id === item.stripe?.id);
-        if (stripe) {
-          stripePrice = stripe.price || 0;
-        }
-      }
-
-      // Add addons
-      let addonsPrice = 0;
-      if (item.addons && item.addons.length > 0 && product.addons) {
-        for (const addon of item.addons) {
-          const productAddon = product.addons.find(a => a.id === addon.id);
-          if (productAddon) {
-            addonsPrice += productAddon.price;
-          }
-        }
-      }
-
-      const validatedUnitPrice = basePrice + stripePrice + addonsPrice;
+      const validatedUnitPrice = basePrice;
       const lineTotal = validatedUnitPrice * item.quantity;
 
       validatedItems.push({
@@ -227,57 +200,61 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       });
     }
 
-    // Create PayPal order
-    try {
-      const paypalOrder = await createPayPalOrder({
-        orderNumber: order.order_number,
-        items: validatedItems.map(item => ({
-          name: item.name,
-          sku: item.sku,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-        })),
-        subtotal: calculatedSubtotal,
-        shipping: shippingCost,
-        tax: tax,
-        discount: discount,
-        total: total,
-        shippingAddress: {
-          fullName: `${shipping.firstName} ${shipping.lastName}`,
-          addressLine1: shipping.address1,
-          addressLine2: shipping.address2,
-          city: shipping.city,
-          state: shipping.state,
-          postalCode: shipping.postcode,
-          countryCode: shipping.country,
-        },
-      });
+    // Create payment via unified payments module
+    const paymentResult = await createPayment('paypal', {
+      orderNumber: order.order_number,
+      orderId: order.id,
+      items: validatedItems.map(item => ({
+        name: item.name,
+        sku: item.sku,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      })),
+      subtotal: calculatedSubtotal,
+      shipping: shippingCost,
+      tax: tax,
+      discount: discount,
+      total: total,
+      currency: CURRENCY.code,
+      shippingAddress: {
+        fullName: `${shipping.firstName} ${shipping.lastName}`,
+        addressLine1: shipping.address1,
+        addressLine2: shipping.address2,
+        city: shipping.city,
+        state: shipping.state,
+        postalCode: shipping.postcode,
+        countryCode: shipping.country,
+        email: shipping.email,
+        phone: shipping.phone,
+      },
+    });
 
+    if (paymentResult.success && paymentResult.externalPaymentId) {
       // Update order with PayPal order ID
       await supabase
         .from('orders')
-        .update({ paypal_order_id: paypalOrder.id })
+        .update({ paypal_order_id: paymentResult.externalPaymentId })
         .eq('id', order.id);
 
       return new Response(JSON.stringify({
         success: true,
         orderId: order.id,
         orderNumber: order.order_number,
-        paypalOrderId: paypalOrder.id,
+        paypalOrderId: paymentResult.externalPaymentId,
         total: total,
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
-    } catch (paypalError) {
-      console.error('PayPal order creation failed:', paypalError);
+    } else {
+      console.error('Payment creation failed:', paymentResult.error);
 
-      // Update order status to indicate PayPal failure
+      // Update order status to indicate payment failure
       await supabase
         .from('orders')
         .update({
-          status: 'payment_failed',
-          internal_note: `PayPal error: ${paypalError instanceof Error ? paypalError.message : 'Unknown'}`,
+          status: 'cancelled',
+          internal_note: `Payment error: ${paymentResult.error || 'Unknown'}`,
         })
         .eq('id', order.id);
 

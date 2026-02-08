@@ -1,0 +1,73 @@
+---
+/**
+ * Auth Callback Page
+ * Handles Supabase email confirmation redirect.
+ * Extracts tokens from URL hash and exchanges them for a session,
+ * then redirects to the account page.
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `Confirming... | ${siteSettings.siteName}`,
+  description: 'Confirming your email address.',
+  noindex: true,
+};
+---
+
+<BaseLayout meta={meta} bodyClass="bg-brand-light">
+  <main class="auth-page">
+    <div class="auth-container">
+      <div class="auth-card text-center py-12">
+        <!-- Spinner -->
+        <div class="w-12 h-12 mx-auto mb-6 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
+        <h1 class="text-xl font-serif font-bold text-brand-dark mb-2">Confirming your email...</h1>
+        <p class="text-sm text-gray-500">Please wait while we verify your account.</p>
+
+        <!-- Error state (hidden by default) -->
+        <div id="error-state" class="hidden mt-6">
+          <p class="text-red-600 text-sm mb-4" id="error-message">Something went wrong. Please try again.</p>
+          <a href="/auth/login/" class="text-brand hover:text-brand-dark font-medium text-sm transition-colors">
+            Go to Sign In
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { createClient } from '@/lib/supabase';
+
+  async function handleCallback() {
+    const supabase = createClient();
+
+    // Supabase appends tokens as URL hash fragments
+    // The JS client can exchange them automatically
+    const { error } = await supabase.auth.getSession();
+
+    if (error) {
+      const errorState = document.getElementById('error-state');
+      const errorMessage = document.getElementById('error-message');
+      if (errorState) errorState.classList.remove('hidden');
+      if (errorMessage) errorMessage.textContent = error.message;
+      return;
+    }
+
+    // Redirect to account page on success
+    window.location.href = '/account/';
+  }
+
+  handleCallback();
+</script>
+
+<style>
+  :global(header),
+  :global(footer),
+  :global(.fixed.bottom-6.right-6) {
+    display: none;
+  }
+</style>

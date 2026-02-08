@@ -23,6 +23,7 @@ import RelatedProducts from "@/components/pdp/RelatedProducts.astro";
 import Configurator from "@/components/pdp/Configurator.tsx";
 import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
 import { siteSettings } from "@/config/site-settings";
+import { CURRENCY } from "@/config/site";
 import { getCategoryBySlug } from "@/config/categories";
 import { createServerSupabase } from "@/lib/supabase";
 
@@ -144,7 +145,7 @@ const productSchema = {
   offers: {
     "@type": "Offer",
     url: pageUrl,
-    priceCurrency: siteSettings.currency,
+    priceCurrency: CURRENCY.code,
     price: data.basePrice.toFixed(2),
     availability: data.in_stock
       ? "https://schema.org/InStock"

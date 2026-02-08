@@ -121,7 +121,7 @@ export interface PaymentProvider {
   refundPayment(transactionId: string, amount?: number): Promise<RefundPaymentResult>;
 
   /** Verify webhook signature (for async notifications) */
-  verifyWebhook?(payload: string, signature: string): boolean;
+  verifyWebhook?(payload: string, headers: Record<string, string>): Promise<boolean>;
 }
 
 // ============================================

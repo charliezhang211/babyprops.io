@@ -1,0 +1,127 @@
+---
+/**
+ * Checkout Return Page
+ * Handles PayPal redirect-based payment return.
+ * PayPal appends ?token=<paypal_order_id>&PayerID=<payer_id> to the return URL.
+ * This page captures the payment and redirects to the thank-you page.
+ */
+
+export const prerender = true;
+
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import { siteSettings } from '@/config/site-settings';
+
+const meta = {
+  title: `Processing Payment... | ${siteSettings.siteName}`,
+  description: 'Processing your payment.',
+  noindex: true,
+};
+---
+
+<BaseLayout {meta}>
+  <main class="min-h-[70vh] flex items-center justify-center bg-gradient-to-b from-brand-light/50 to-white">
+    <div class="max-w-md mx-auto px-4 text-center">
+      <!-- Loading state -->
+      <div id="loading-state">
+        <div class="w-12 h-12 mx-auto mb-6 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
+        <h1 class="text-xl font-serif font-bold text-brand-dark mb-2">Processing your payment...</h1>
+        <p class="text-sm text-gray-500">Please wait while we confirm your order.</p>
+      </div>
+
+      <!-- Error state (hidden by default) -->
+      <div id="error-state" class="hidden">
+        <div class="w-16 h-16 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <h1 class="text-xl font-serif font-bold text-brand-dark mb-2">Payment Issue</h1>
+        <p class="text-sm text-gray-500 mb-6" id="error-message">Something went wrong with your payment.</p>
+        <div class="flex flex-col gap-3">
+          <a
+            href="/checkout/"
+            class="inline-flex items-center justify-center px-6 py-3 bg-brand text-white font-medium rounded-full hover:bg-brand-dark transition-colors"
+          >
+            Try Again
+          </a>
+          <a
+            href={`mailto:${siteSettings.contact.email}`}
+            class="text-brand hover:text-brand-dark font-medium text-sm transition-colors"
+          >
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  async function handlePayPalReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const paypalOrderId = params.get('token');
+
+    if (!paypalOrderId) {
+      showError('No payment token found. Please try checking out again.');
+      return;
+    }
+
+    // Look up the order by PayPal order ID from sessionStorage
+    const pendingOrder = sessionStorage.getItem('pending_order');
+    let orderId: string | null = null;
+
+    if (pendingOrder) {
+      try {
+        const parsed = JSON.parse(pendingOrder);
+        if (parsed.paypalOrderId === paypalOrderId) {
+          orderId = parsed.orderId;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    if (!orderId) {
+      showError('Order information not found. Please contact support if you were charged.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/checkout/capture-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paypalOrderId, orderId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Clear pending order data
+        sessionStorage.removeItem('pending_order');
+
+        // Redirect to thank-you page
+        const thankYouParams = new URLSearchParams({
+          order_id: result.orderNumber || '',
+          email: result.email || '',
+        });
+        window.location.href = `/thank-you/?${thankYouParams.toString()}`;
+      } else {
+        showError(result.error || 'Payment capture failed. Please contact support.');
+      }
+    } catch (err) {
+      showError('Network error. Please check your connection and contact support if you were charged.');
+    }
+  }
+
+  function showError(message: string) {
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const errorMessage = document.getElementById('error-message');
+
+    if (loadingState) loadingState.classList.add('hidden');
+    if (errorState) errorState.classList.remove('hidden');
+    if (errorMessage) errorMessage.textContent = message;
+  }
+
+  handlePayPalReturn();
+</script>

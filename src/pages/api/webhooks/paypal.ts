@@ -8,9 +8,7 @@
 
 import type { APIRoute } from 'astro';
 import { createServerSupabase } from '@/lib/supabase';
-import { verifyWebhookSignature } from '@/lib/paypal';
-
-const PAYPAL_WEBHOOK_ID = import.meta.env.PAYPAL_WEBHOOK_ID;
+import { getPaymentProvider } from '@/lib/payments';
 
 interface PayPalWebhookEvent {
   id: string;
@@ -46,9 +44,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       headers[key.toLowerCase()] = value;
     }
 
-    // Verify webhook signature (optional but recommended for production)
-    if (PAYPAL_WEBHOOK_ID) {
-      const isValid = await verifyWebhookSignature(headers, body, PAYPAL_WEBHOOK_ID);
+    // Verify webhook signature via payments module
+    const paypalProvider = getPaymentProvider('paypal');
+    if (paypalProvider?.verifyWebhook) {
+      const isValid = await paypalProvider.verifyWebhook(body, headers);
       if (!isValid) {
         console.error('Invalid PayPal webhook signature');
         return new Response(JSON.stringify({ error: 'Invalid signature' }), {
@@ -117,8 +116,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           await supabase
             .from('orders')
             .update({
-              status: 'payment_failed',
-              payment_status: 'failed',
+              status: 'cancelled',
+              payment_status: 'unpaid',
               internal_note: `Payment denied at ${event.create_time}`,
             })
             .eq('id', order.id);

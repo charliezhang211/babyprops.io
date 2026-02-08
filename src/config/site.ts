@@ -1,6 +1,11 @@
 /**
  * Site Configuration
- * 统一站点配置 - 货币、支付、地区等
+ * 货币、运费、价格格式化等核心业务配置
+ *
+ * 职责划分:
+ *   site.ts         → 货币/运费/价格格式化 (数据层)
+ *   site-settings.ts → 品牌/UI文案/功能开关 (表现层)
+ *   lib/payments/    → 支付网关Provider配置 (支付层)
  */
 
 // ============================================
@@ -14,22 +19,6 @@ export const CURRENCY = {
   decimalPlaces: 2,      // 小数位数
   decimalSeparator: '.', // 小数分隔符
   thousandSeparator: ',', // 千位分隔符
-};
-
-// ============================================
-// 支付配置
-// ============================================
-
-export const PAYMENT = {
-  // PayPal
-  paypal: {
-    enabled: true,
-    currency: CURRENCY.code,
-    intent: 'capture' as const,
-  },
-  // 其他支付方式可以在这里添加
-  // stripe: { enabled: false, currency: CURRENCY.code },
-  // bankTransfer: { enabled: false },
 };
 
 // ============================================
@@ -91,12 +80,3 @@ export function formatPrice(
   return formatted;
 }
 
-/**
- * 获取 PayPal 配置
- */
-export function getPayPalConfig() {
-  return {
-    currency: PAYMENT.paypal.currency,
-    intent: PAYMENT.paypal.intent,
-  };
-}

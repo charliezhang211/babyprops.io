@@ -48,8 +48,7 @@ export const siteSettings = {
     enableNewsletter: true,
   },
 
-  // 货币配置
-  currency: 'USD',
+  // Currency: use CURRENCY from '@/config/site' instead
   pdp: {
     quantityLabel: 'Quantity',
     variantLabel: 'Options',

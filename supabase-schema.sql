@@ -71,7 +71,6 @@ CREATE TABLE IF NOT EXISTS orders (
     email TEXT NOT NULL,  -- For order confirmation & guest order lookup
 
     -- Payment integration
-    woo_order_id INTEGER,
     paypal_order_id TEXT UNIQUE,
     paypal_capture_id TEXT,
 

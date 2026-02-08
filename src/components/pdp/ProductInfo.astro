@@ -28,6 +28,7 @@
 
 import Badge from '@/components/ui/Badge.astro';
 import { siteSettings } from '@/config/site-settings';
+import { CURRENCY } from '@/config/site';
 
 interface Props {
   title: string;
@@ -56,7 +57,7 @@ const {
 // Format price
 const formattedPrice = new Intl.NumberFormat('en-US', {
   style: 'currency',
-  currency: siteSettings.currency,
+  currency: CURRENCY.code,
 }).format(price);
 ---
 
