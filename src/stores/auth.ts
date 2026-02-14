@@ -32,38 +32,41 @@ export async function initAuth() {
   if (initialized) return;
   initialized = true;
 
-  const supabase = createClient();
-
-  // Get initial session
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const supabase = createClient();
+
+    // Get initial session with timeout to prevent infinite loading
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Auth initialization timed out')), 5000)
+    );
+
+    const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
     if (error) throw error;
 
     authSession.set(session);
     authUser.set(session?.user ?? null);
+
+    // Listen for auth changes (only after successful init)
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      authSession.set(session);
+      authUser.set(session?.user ?? null);
+      authError.set(null);
+
+      if (event === 'SIGNED_IN') {
+        window.dispatchEvent(new CustomEvent('auth:signed-in', {
+          detail: { user: session?.user }
+        }));
+      } else if (event === 'SIGNED_OUT') {
+        window.dispatchEvent(new CustomEvent('auth:signed-out'));
+      }
+    });
   } catch (error) {
     console.error('Failed to get session:', error);
     authError.set('Failed to initialize authentication');
   } finally {
     authLoading.set(false);
   }
-
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    authSession.set(session);
-    authUser.set(session?.user ?? null);
-    authError.set(null);
-
-    // Handle specific events
-    if (event === 'SIGNED_IN') {
-      // Trigger cart merge after login
-      window.dispatchEvent(new CustomEvent('auth:signed-in', {
-        detail: { user: session?.user }
-      }));
-    } else if (event === 'SIGNED_OUT') {
-      window.dispatchEvent(new CustomEvent('auth:signed-out'));
-    }
-  });
 }
 
 // ============================================

@@ -58,26 +58,7 @@ export default function AuthButton() {
       .slice(0, 2);
   };
 
-  if (loading) {
-    return (
-      <div className="p-2 text-gray-400">
-        <svg
-          className="w-5 h-5 animate-spin"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="12" cy="12" r="10" opacity="0.25" />
-          <path d="M12 2a10 10 0 0 1 10 10" />
-        </svg>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
+  if (loading || !isLoggedIn) {
     return (
       <a
         href="/auth/login/"
