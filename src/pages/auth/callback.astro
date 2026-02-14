@@ -2,13 +2,14 @@
 /**
  * Auth Callback Page
  * Handles Supabase email confirmation redirect.
- * Extracts tokens from URL hash and exchanges them for a session,
- * then redirects to the account page.
+ *
+ * Supabase PKCE flow sends ?code=xxx query parameter that must be
+ * exchanged server-side for a session. Legacy implicit flow uses
+ * hash fragments handled client-side.
  */
 
-export const prerender = true;
-
 import BaseLayout from '@/components/layout/BaseLayout.astro';
+import { createServerSupabase } from '@/lib/supabase';
 import { siteSettings } from '@/config/site-settings';
 
 const meta = {
@@ -16,18 +17,49 @@ const meta = {
   description: 'Confirming your email address.',
   noindex: true,
 };
+
+// Handle PKCE code exchange server-side
+const code = Astro.url.searchParams.get('code');
+let serverError = '';
+
+if (code) {
+  try {
+    const supabase = createServerSupabase(Astro.cookies);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      serverError = error.message;
+    } else {
+      // Success - redirect immediately
+      return Astro.redirect('/account/');
+    }
+  } catch (e: any) {
+    serverError = e.message || 'Failed to verify email';
+  }
+}
 ---
 
 <BaseLayout meta={meta} bodyClass="bg-brand-light">
   <main class="auth-page">
     <div class="auth-container">
       <div class="auth-card text-center py-12">
-        <!-- Spinner -->
-        <div class="w-12 h-12 mx-auto mb-6 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
-        <h1 class="text-xl font-serif font-bold text-brand-dark mb-2">Confirming your email...</h1>
-        <p class="text-sm text-gray-500">Please wait while we verify your account.</p>
+        {serverError ? (
+          <!-- Server-side error -->
+          <div>
+            <p class="text-red-600 text-sm mb-4">{serverError}</p>
+            <a href="/auth/login/" class="text-brand hover:text-brand-dark font-medium text-sm transition-colors">
+              Go to Sign In
+            </a>
+          </div>
+        ) : (
+          <!-- Client-side handling for hash fragment flow (fallback) -->
+          <div id="loading-state">
+            <div class="w-12 h-12 mx-auto mb-6 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
+            <h1 class="text-xl font-serif font-bold text-brand-dark mb-2">Confirming your email...</h1>
+            <p class="text-sm text-gray-500">Please wait while we verify your account.</p>
+          </div>
+        )}
 
-        <!-- Error state (hidden by default) -->
+        <!-- Error state for client-side handling -->
         <div id="error-state" class="hidden mt-6">
           <p class="text-red-600 text-sm mb-4" id="error-message">Something went wrong. Please try again.</p>
           <a href="/auth/login/" class="text-brand hover:text-brand-dark font-medium text-sm transition-colors">
@@ -43,21 +75,31 @@ const meta = {
   import { createClient } from '@/lib/supabase';
 
   async function handleCallback() {
-    const supabase = createClient();
+    // If there's a hash fragment (legacy implicit flow), handle client-side
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token')) {
+      // No hash and no code (code handled server-side) - check if already has session
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = '/account/';
+      }
+      return;
+    }
 
-    // Supabase appends tokens as URL hash fragments
-    // The JS client can exchange them automatically
+    const supabase = createClient();
     const { error } = await supabase.auth.getSession();
 
     if (error) {
+      const loadingState = document.getElementById('loading-state');
       const errorState = document.getElementById('error-state');
       const errorMessage = document.getElementById('error-message');
+      if (loadingState) loadingState.classList.add('hidden');
       if (errorState) errorState.classList.remove('hidden');
       if (errorMessage) errorMessage.textContent = error.message;
       return;
     }
 
-    // Redirect to account page on success
     window.location.href = '/account/';
   }
 
