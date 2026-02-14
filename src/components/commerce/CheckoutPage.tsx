@@ -6,8 +6,14 @@
  */
 
 import { useStore } from '@nanostores/react';
-import { useState, useEffect } from 'react';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+
+const LazyPayPalProvider = lazy(() =>
+  import('@paypal/react-paypal-js').then((mod) => ({ default: mod.PayPalScriptProvider }))
+);
+const LazyPayPalButtons = lazy(() =>
+  import('@paypal/react-paypal-js').then((mod) => ({ default: mod.PayPalButtons }))
+);
 import {
   cartItems,
   cartSubtotal,
@@ -483,11 +489,14 @@ export default function CheckoutPage() {
   const [localItems, setLocalItems] = useState<CartItem[]>([]);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [paypalVisible, setPaypalVisible] = useState(false);
+  const paypalRef = useRef<HTMLDivElement>(null);
 
   const paypalClientId = import.meta.env.PUBLIC_PAYPAL_CLIENT_ID || 'test';
 
-  /* ---- Mount: instant localStorage read + background sync ---- */
+  /* ---- Mount: instant localStorage read + parallel background fetches ---- */
   useEffect(() => {
+    // 1. Instant: read cart from localStorage (synchronous, no lag)
     const stored = localStorage.getItem('commerce-kit-cart');
     if (stored) {
       try {
@@ -501,10 +510,10 @@ export default function CheckoutPage() {
       }
     }
 
+    // 2. Instant: prefill user info from auth store
     if (user?.email && !address.email) {
       updateShippingAddress({ email: user.email });
     }
-
     if (user?.user_metadata?.full_name && !address.firstName) {
       const nameParts = user.user_metadata.full_name.split(' ');
       updateShippingAddress({
@@ -515,64 +524,112 @@ export default function CheckoutPage() {
 
     setIsMounted(true);
 
-    loadCartFromServer().catch((err) => {
+    // 3. Background: fire cart sync + address fetch in parallel
+    const bgCartSync = loadCartFromServer().catch((err) => {
       console.error('Background cart sync failed:', err);
     });
+
+    const bgAddressFetch = loggedIn
+      ? fetch('/api/account/addresses')
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (!data) return;
+            setSavedAddresses(data.addresses || []);
+            const defaultAddr = data.addresses?.find((a: SavedAddress) => a.is_default);
+            if (defaultAddr && !address.address1) {
+              const nameParts = defaultAddr.full_name.split(' ');
+              updateShippingAddress({
+                firstName: nameParts[0] || '',
+                lastName: nameParts.slice(1).join(' ') || '',
+                address1: defaultAddr.address_line1,
+                address2: defaultAddr.address_line2 || '',
+                city: defaultAddr.city,
+                state: defaultAddr.state,
+                postcode: defaultAddr.postal_code,
+                country: defaultAddr.country,
+                phone: defaultAddr.phone || '',
+                email: defaultAddr.email || user?.email || '',
+              });
+            }
+          })
+          .catch((err) => console.error('Failed to fetch addresses:', err))
+      : Promise.resolve();
+
+    // Both run concurrently — no waterfall
+    Promise.all([bgCartSync, bgAddressFetch]);
   }, []);
 
-  /* ---- Fetch saved addresses when logged in ---- */
+  /* ---- Lazy-load PayPal when payment section enters viewport ---- */
   useEffect(() => {
-    const fetchAddresses = async () => {
-      if (!loggedIn) {
-        setSavedAddresses([]);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/account/addresses');
-        if (response.ok) {
-          const data = await response.json();
-          setSavedAddresses(data.addresses || []);
-
-          const defaultAddr = data.addresses?.find((a: SavedAddress) => a.is_default);
-          if (defaultAddr && !address.address1) {
-            const nameParts = defaultAddr.full_name.split(' ');
-            updateShippingAddress({
-              firstName: nameParts[0] || '',
-              lastName: nameParts.slice(1).join(' ') || '',
-              address1: defaultAddr.address_line1,
-              address2: defaultAddr.address_line2 || '',
-              city: defaultAddr.city,
-              state: defaultAddr.state,
-              postcode: defaultAddr.postal_code,
-              country: defaultAddr.country,
-              phone: defaultAddr.phone || '',
-              email: defaultAddr.email || user?.email || '',
-            });
-          }
+    if (!paypalRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setPaypalVisible(true);
+          observer.disconnect();
         }
-      } catch (err) {
-        console.error('Failed to fetch addresses:', err);
-      }
-    };
-
-    fetchAddresses();
-  }, [loggedIn]);
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(paypalRef.current);
+    return () => observer.disconnect();
+  }, [isMounted]);
 
   const items = localItems.length > 0 ? localItems : storeItems;
 
-  /* ---- Redirect if cart empty ---- */
+  /* ---- Redirect if cart empty (click hidden link for ViewTransitions) ---- */
+  const emptyCartLinkRef = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
-    if (isMounted && items.length === 0) {
-      window.location.href = '/cart/';
+    if (isMounted && items.length === 0 && emptyCartLinkRef.current) {
+      emptyCartLinkRef.current.click();
     }
   }, [isMounted, items.length]);
 
-  if (!isMounted) return null;
+  if (!isMounted) {
+    return (
+      <div data-commerce="checkout" className="max-w-5xl mx-auto py-4 sm:py-8 animate-pulse">
+        <div className="h-8 w-48 bg-gray-200 rounded mb-8" />
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 space-y-4">
+            <div className="p-5 bg-white border border-gray-200 rounded-2xl space-y-4">
+              <div className="h-5 w-32 bg-gray-200 rounded" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 bg-gray-100 rounded-lg" />
+                <div className="h-10 bg-gray-100 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 bg-gray-100 rounded-lg" />
+                <div className="h-10 bg-gray-100 rounded-lg" />
+              </div>
+              <div className="h-10 bg-gray-100 rounded-lg" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-10 bg-gray-100 rounded-lg" />
+                <div className="h-10 bg-gray-100 rounded-lg" />
+              </div>
+            </div>
+          </div>
+          <div className="lg:w-96 space-y-4">
+            <div className="p-5 bg-brand-light border border-gray-200 rounded-2xl space-y-3">
+              <div className="h-5 w-36 bg-gray-200 rounded" />
+              <div className="h-14 bg-gray-100 rounded-lg" />
+              <div className="h-14 bg-gray-100 rounded-lg" />
+              <div className="h-px bg-gray-200" />
+              <div className="h-6 bg-gray-200 rounded" />
+            </div>
+            <div className="p-5 bg-white border border-gray-200 rounded-2xl">
+              <div className="h-5 w-24 bg-gray-200 rounded mb-4" />
+              <div className="h-12 bg-gray-100 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
       <div data-commerce="checkout" className="flex items-center justify-center min-h-[40vh]">
+        <a ref={emptyCartLinkRef} href="/cart/" className="hidden" aria-hidden="true">redirect</a>
         <p className="text-gray-500 text-sm">{L.redirectingLabel}</p>
       </div>
     );
@@ -741,31 +798,47 @@ export default function CheckoutPage() {
             )}
 
             {/* Payment section */}
-            <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
+            <div ref={paypalRef} className="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
               <h2 className="text-lg font-serif font-bold text-brand-dark">{L.paymentTitle}</h2>
 
-              <div className="relative">
-                <PayPalScriptProvider
-                  options={{
-                    clientId: paypalClientId,
-                    currency: CURRENCY.code,
-                    intent: 'capture',
-                  }}
-                >
-                  <PayPalButtons
-                    style={{
-                      layout: 'vertical',
-                      color: 'gold',
-                      shape: 'pill',
-                      label: 'pay',
-                    }}
-                    disabled={!addressValid || processing}
-                    createOrder={handlePayPalCreateOrder}
-                    onApprove={handlePayPalApprove}
-                    onError={handlePayPalError}
-                    onCancel={handlePayPalCancel}
-                  />
-                </PayPalScriptProvider>
+              <div className="relative min-h-[120px]">
+                {paypalVisible ? (
+                  <Suspense
+                    fallback={
+                      <div className="flex flex-col items-center justify-center gap-3 py-8">
+                        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-500">Loading payment...</span>
+                      </div>
+                    }
+                  >
+                    <LazyPayPalProvider
+                      options={{
+                        clientId: paypalClientId,
+                        currency: CURRENCY.code,
+                        intent: 'capture',
+                      }}
+                    >
+                      <LazyPayPalButtons
+                        style={{
+                          layout: 'vertical',
+                          color: 'gold',
+                          shape: 'pill',
+                          label: 'pay',
+                        }}
+                        disabled={!addressValid || processing}
+                        createOrder={handlePayPalCreateOrder}
+                        onApprove={handlePayPalApprove}
+                        onError={handlePayPalError}
+                        onCancel={handlePayPalCancel}
+                      />
+                    </LazyPayPalProvider>
+                  </Suspense>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-3 py-8">
+                    <div className="w-6 h-6 border-2 border-gray-200 border-t-brand rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Preparing payment...</span>
+                  </div>
+                )}
 
                 {/* Processing overlay */}
                 {processing && (
