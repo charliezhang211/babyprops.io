@@ -289,7 +289,7 @@ const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) =>
               {pageNumbers.map((item) => {
                 if (item.type === 'ellipsis-prev' || item.type === 'ellipsis-next') {
                   return (
-                    <li key={`ellipsis-${item.page}`}>
+                    <li>
                       <span class="px-3 py-2">...</span>
                     </li>
                   );
@@ -297,7 +297,7 @@ const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) =>
 
                 if (item.type === 'active') {
                   return (
-                    <li key={`page-${item.page}`}>
+                    <li>
                       <span class="px-4 py-2 bg-brand text-white rounded font-medium" aria-current="page">
                         {item.page}
                       </span>
@@ -306,7 +306,7 @@ const pageNumbers = Array.from({ length: paginatedResult.totalPages }, (_, i) =>
                 }
 
                 return (
-                  <li key={`page-${item.page}`}>
+                  <li>
                     <a
                       href={item.url}
                       class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"

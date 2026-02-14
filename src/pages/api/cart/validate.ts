@@ -80,21 +80,23 @@ export const POST: APIRoute = async ({ locals, cookies }) => {
       }
 
       // Calculate validated price from server-side data
-      let validatedPrice = product.data.price_base;
+      // Cast to any since product schema may have extended fields from commerce kit
+      const productData = product.data as any;
+      let validatedPrice = productData.price_base ?? productData.basePrice;
 
       // Parse SKU to get variant and size
       // SKU format: PREFIX-VARIANT-SIZE or PREFIX-VARIANT-COLOR-SIZE
       const skuParts = item.sku.split('-');
       // Use sku_prefix from product, or derive from slug (same logic as Configurator)
-      const prefix = product.data.sku_prefix || product.data.slug.split('-')[0].toUpperCase();
+      const prefix = productData.sku_prefix || productData.slug.split('-')[0].toUpperCase();
 
       // Skip prefix, get remaining parts
       const skuRemainder = item.sku.replace(`${prefix}-`, '');
 
       // Find variant price modifier
-      if (product.data.variants && item.variant) {
+      if (productData.variants && item.variant) {
         // Match by variant name (most reliable) or by SKU pattern
-        const variant = product.data.variants.find(v => {
+        const variant = productData.variants.find((v: any) => {
           // First try exact name match
           if (v.name === item.variant) return true;
           // Then try SKU-based match
@@ -107,15 +109,15 @@ export const POST: APIRoute = async ({ locals, cookies }) => {
 
           // Check for sub-color price modifier (if applicable)
           if (variant.colors && item.color) {
-            const color = variant.colors.find(c => c.name.toLowerCase() === item.color?.toLowerCase());
+            const _color = variant.colors.find((c: any) => c.name.toLowerCase() === item.color?.toLowerCase());
             // Colors don't have price_mod in current schema, but could be added
           }
         }
       }
 
       // Find size price modifier
-      if (product.data.sizes && item.size) {
-        const size = product.data.sizes.find(s => {
+      if (productData.sizes && item.size) {
+        const size = productData.sizes.find((s: any) => {
           const sizeSku = s.sku || s.id.toUpperCase();
           return item.sku.includes(sizeSku);
         });
@@ -126,8 +128,8 @@ export const POST: APIRoute = async ({ locals, cookies }) => {
       }
 
       // Add stripe price (if selected)
-      if (item.stripe && product.data.stripes) {
-        const stripe = product.data.stripes.find(s => {
+      if (item.stripe && productData.stripes) {
+        const stripe = productData.stripes.find((s: any) => {
           const stripeSku = s.sku || s.id;
           return stripeSku === item.stripe?.id;
         });
@@ -138,9 +140,9 @@ export const POST: APIRoute = async ({ locals, cookies }) => {
       }
 
       // Add addon prices
-      if (item.addons && item.addons.length > 0 && product.data.addons) {
+      if (item.addons && item.addons.length > 0 && productData.addons) {
         for (const addon of item.addons) {
-          const productAddon = product.data.addons.find(a => {
+          const productAddon = productData.addons.find((a: any) => {
             const addonSku = a.sku || a.id;
             return addonSku === addon.id;
           });

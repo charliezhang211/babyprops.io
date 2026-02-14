@@ -16,7 +16,7 @@ export interface Category {
  * 8 大产品分类
  * 用于导航菜单、首页分类网格、产品筛选等
  */
-export const categories = [
+export const categories: Category[] = [
   {
     slug: 'photo-props',
     name: 'Photo Props',
@@ -67,12 +67,12 @@ export const categories = [
     description: 'Small props for detailed shots',
     image: '/images/categories/mini-creative-props.webp',
   },
-] as const;
+];
 
 /**
  * 分类 Slug 类型 (用于 TypeScript 类型检查)
  */
-export type CategorySlug = (typeof categories)[number]['slug'];
+export type CategorySlug = 'photo-props' | 'theme-sets' | 'photo-clothes' | 'posing-props' | 'wraps-blankets' | 'hats-headbands' | 'training-dolls' | 'mini-creative-props';
 
 /**
  * 根据 slug 查找分类

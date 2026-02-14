@@ -26,9 +26,17 @@ interface Summary {
   total_uses: number;
 }
 
-const emptyCoupon = {
+const emptyCoupon: {
+  code: string;
+  type: 'fixed' | 'percentage';
+  value: string;
+  min_order: string;
+  max_uses: string;
+  valid_from: string;
+  valid_to: string;
+} = {
   code: '',
-  type: 'percentage' as const,
+  type: 'percentage',
   value: '',
   min_order: '',
   max_uses: '',

@@ -39,7 +39,7 @@ export default function GuestConversion({ email, orderId }: GuestConversionProps
     setIsLoading(true);
 
     try {
-      const result = await signUp(email, password, fullName);
+      const result = await signUp(email, password, { full_name: fullName });
 
       if (result.success) {
         setSuccess(true);
