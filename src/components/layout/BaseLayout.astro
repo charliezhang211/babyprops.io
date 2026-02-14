@@ -31,10 +31,13 @@ interface Meta {
 interface Props {
   meta?: Meta;
   bodyClass?: string;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+  hideWhatsApp?: boolean;
 }
 
 // 解构 Props
-const { meta = {}, bodyClass = "" } = Astro.props;
+const { meta = {}, bodyClass = "", hideHeader = false, hideFooter = false, hideWhatsApp = false } = Astro.props;
 
 // 默认 SEO 值
 const pageTitle =
@@ -43,7 +46,7 @@ const pageDescription =
   meta.description ||
   "Shop professional newborn photography props at Dvotinst. 8 years serving photographers worldwide. Posing props, wraps, outfits & more. Free shipping over $99.";
 const pageImage =
-  meta.image || `${siteSettings.siteUrl}/images/brand/og-image.jpg`;
+  meta.image || `${siteSettings.siteUrl}/images/brand/og-image.svg`;
 const pageUrl = meta.url || siteSettings.siteUrl;
 const pageType = meta.type || "website";
 
@@ -119,12 +122,25 @@ const websiteSchema = {
     <meta property="twitter:image" content={pageImage} />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#D4A5A5" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
 
     <!-- Self-hosted fonts: preload critical latin subsets -->
-    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/playfair-display-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
     <!-- Schema.org 结构化数据 -->
     <script
@@ -145,16 +161,16 @@ const websiteSchema = {
 
   <body class={`min-h-screen flex flex-col ${bodyClass}`}>
     <!-- Header 导航 -->
-    <Header />
+    {!hideHeader && <Header />}
 
     <!-- 页面内容插槽 -->
     <slot />
 
     <!-- Footer -->
-    <Footer />
+    {!hideFooter && <Footer />}
 
     <!-- WhatsApp 浮动按钮 -->
-    <a
+    {!hideWhatsApp && <a
       href={siteSettings.contact.whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
@@ -179,6 +195,6 @@ const websiteSchema = {
       >
         Chat with us
       </span>
-    </a>
+    </a>}
   </body>
 </html>

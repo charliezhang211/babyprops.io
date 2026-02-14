@@ -293,6 +293,25 @@ export interface ShippingAddressSnapshot {
   country: string;
 }
 
+/**
+ * Check if the current user is an admin
+ * Must be called in page frontmatter (not components) to allow redirect
+ */
+export async function checkAdmin(cookies: AstroCookies): Promise<{ supabase: ReturnType<typeof createServerSupabase>; isAdmin: boolean; user: any }> {
+  const supabase = createServerSupabase(cookies);
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { supabase, isAdmin: false, user: null };
+
+  const { data } = await supabase
+    .from('admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .single();
+
+  return { supabase, isAdmin: !!data, user };
+}
+
 // Legacy type for backward compatibility
 export interface ShippingAddress {
   first_name: string;

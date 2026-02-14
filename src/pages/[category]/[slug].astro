@@ -2,6 +2,9 @@
 /**
  * Product Detail Page (PDP)
  *
+ * URL: /{category}/{slug}
+ * Breadcrumb: Home > Shop > {Category} > {Product}
+ *
  * Features:
  * - Dynamic product page generation via getStaticPaths
  * - Product gallery with lightbox
@@ -38,7 +41,7 @@ export async function getStaticPaths() {
   const products = await getCollection("products");
 
   return products.map((product) => ({
-    params: { slug: product.data.slug },
+    params: { category: product.data.category, slug: product.data.slug },
     props: { product },
   }));
 }
@@ -54,7 +57,7 @@ const category = getCategoryBySlug(data.category);
 // Build gallery images array
 const galleryImages = [data.featured_image, ...(data.gallery || [])];
 
-// Build breadcrumb trail
+// Build breadcrumb trail (keep Shop layer)
 const breadcrumbs = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/shop" },
@@ -123,7 +126,7 @@ const pageTitle =
 const pageDescription =
   data.meta_description ||
   `Buy ${data.title} at ${siteSettings.siteName}. Perfect for newborn photoshoots. ${data.material ? `High quality ${data.material}` : "Premium quality"}, ${data.color_family ? `available in ${data.color_family}` : "beautiful design"}. Worldwide shipping.`;
-const pageUrl = `${siteSettings.siteUrl}/products/${data.slug}`;
+const pageUrl = `${siteSettings.siteUrl}/${data.category}/${data.slug}`;
 const pageImage = data.featured_image.startsWith("http")
   ? data.featured_image
   : `${siteSettings.siteUrl}${data.featured_image}`;

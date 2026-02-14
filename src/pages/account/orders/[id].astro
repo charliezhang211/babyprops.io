@@ -9,6 +9,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb.astro';
 import { siteSettings } from '@/config/site-settings';
 import { createServerSupabase } from '@/lib/supabase';
 import type { OrderItemRow, ShippingAddressSnapshot } from '@/lib/supabase';
+import { getCollection } from 'astro:content';
 
 // Get order ID from URL params
 const { id } = Astro.params;
@@ -43,6 +44,11 @@ const { data: items } = await supabase
   .order('created_at', { ascending: true });
 
 const orderItems: OrderItemRow[] = items || [];
+
+// Build slug-to-category map — only fetch products matching order item slugs
+const itemSlugs = orderItems.map(i => i.product_slug);
+const matchedProducts = await getCollection('products', ({ data }) => itemSlugs.includes(data.slug));
+const slugToCategoryMap = new Map(matchedProducts.map(p => [p.data.slug, p.data.category]));
 
 // Helper function to get status badge color
 function getStatusColor(status: string): string {
@@ -303,7 +309,7 @@ const breadcrumbItems = [
                   )}
                 </div>
                 <div class="order-detail-item-info">
-                  <a href={`/products/${item.product_slug}/`} class="order-detail-item-name">
+                  <a href={`/${slugToCategoryMap.get(item.product_slug) || 'products'}/${item.product_slug}/`} class="order-detail-item-name">
                     {item.name}
                   </a>
                   <div class="order-detail-item-meta">

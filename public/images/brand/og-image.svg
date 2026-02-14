@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#F5F0EB" />
+  <circle cx="100" cy="100" r="300" fill="#D4A5A5" opacity="0.1" />
+  <circle cx="1100" cy="530" r="400" fill="#9C8B7E" opacity="0.1" />
+  
+  <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-family="'Playfair Display', serif" font-size="120" fill="#9C8B7E">Dvotinst</text>
+  <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="'Inter', sans-serif" font-size="40" fill="#D4A5A5" letter-spacing="8">NEWBORN PROPS</text>
+  
+  <rect x="400" y="380" width="400" height="2" fill="#D4A5A5" opacity="0.5" />
+</svg>

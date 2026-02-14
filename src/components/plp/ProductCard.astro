@@ -25,7 +25,7 @@ const {
 } = Astro.props;
 
 const { data } = product;
-const productUrl = `/products/${data.slug}`;
+const productUrl = `/${data.category}/${data.slug}`;
 
 // 价格显示
 const price = formatPrice(data.basePrice);

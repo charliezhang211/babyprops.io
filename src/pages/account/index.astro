@@ -19,15 +19,29 @@ if (!user) {
   return Astro.redirect('/auth/login?redirect=/account/');
 }
 
-// Fetch user's recent orders (last 3)
-const { data: orders } = await supabase
-  .from('orders')
-  .select('*')
-  .eq('user_id', user.id)
-  .order('created_at', { ascending: false })
-  .limit(3);
+// Fetch all data in parallel
+const [ordersResult, addressCountResult, orderCountResult] = await Promise.all([
+  supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(3),
+  supabase
+    .from('addresses')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id),
+  supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id),
+]);
 
-// Fetch order items for recent orders
+const orders = ordersResult.data;
+const addressCount = addressCountResult.count;
+const orderCount = orderCountResult.count;
+
+// Fetch order items (depends on orders result)
 let orderItems: OrderItemRow[] = [];
 if (orders && orders.length > 0) {
   const orderIds = orders.map(o => o.id);
@@ -37,18 +51,6 @@ if (orders && orders.length > 0) {
     .in('order_id', orderIds);
   orderItems = items || [];
 }
-
-// Fetch user's address count
-const { count: addressCount } = await supabase
-  .from('addresses')
-  .select('*', { count: 'exact', head: true })
-  .eq('user_id', user.id);
-
-// Fetch total orders count
-const { count: orderCount } = await supabase
-  .from('orders')
-  .select('*', { count: 'exact', head: true })
-  .eq('user_id', user.id);
 
 // Get user info
 const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';

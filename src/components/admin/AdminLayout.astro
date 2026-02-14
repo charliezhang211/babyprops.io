@@ -1,40 +1,19 @@
 ---
 /**
  * Admin Layout Component
- * Provides sidebar navigation and admin-only access check
+ * Provides sidebar navigation for admin pages.
+ * Auth check must be done in page frontmatter before rendering this component.
  */
-import { createServerSupabase } from "@/lib/supabase";
 import BaseLayout from "@/components/layout/BaseLayout.astro";
 import { siteSettings } from "@/config/site-settings";
 
 interface Props {
     title: string;
     currentPage?: "dashboard" | "orders" | "coupons" | "reviews";
+    userEmail?: string;
 }
 
-const { title, currentPage = "dashboard" } = Astro.props;
-
-// Get user session
-const supabase = createServerSupabase(Astro.cookies);
-const {
-    data: { user },
-} = await supabase.auth.getUser();
-
-// Check if user is admin
-let isAdmin = false;
-if (user) {
-    const { data } = await supabase
-        .from("admin_users")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-    isAdmin = !!data;
-}
-
-// Redirect if not authenticated or not admin
-if (!user || !isAdmin) {
-    return Astro.redirect("/auth/login?redirect=/admin/");
-}
+const { title, currentPage = "dashboard", userEmail } = Astro.props;
 
 // Navigation items
 const navItems = [
@@ -139,7 +118,7 @@ const meta = {
                     <span>Back to Site</span>
                 </a>
                 <div class="admin-user-info">
-                    <span class="admin-user-email">{user.email}</span>
+                    <span class="admin-user-email">{userEmail}</span>
                 </div>
             </div>
         </aside>

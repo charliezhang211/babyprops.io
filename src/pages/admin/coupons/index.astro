@@ -5,8 +5,12 @@
  */
 import AdminLayout from "@/components/admin/AdminLayout.astro";
 import CouponsManager from "@/components/admin/CouponsManager";
+import { checkAdmin } from "@/lib/supabase";
+
+const { isAdmin, user } = await checkAdmin(Astro.cookies);
+if (!isAdmin) return Astro.redirect('/auth/login?redirect=/admin/coupons/');
 ---
 
-<AdminLayout title="Coupons Management" currentPage="coupons">
+<AdminLayout title="Coupons Management" currentPage="coupons" userEmail={user?.email}>
     <CouponsManager client:load />
 </AdminLayout>

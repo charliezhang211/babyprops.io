@@ -138,25 +138,15 @@ export default function ProductReviewsSection({
       />
 
       {/* Review Form */}
-      <div ref={formRef}>
-        {showForm ? (
+      {showForm && (
+        <div ref={formRef}>
           <ReviewForm
             productSlug={productSlug}
             productName={productName}
             onSubmitted={handleSubmitted}
           />
-        ) : (
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={handleWriteReview}
-              className="px-6 py-2.5 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-dark transition-colors duration-200 cursor-pointer border-none"
-            >
-              Write a Review
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,26 +4,23 @@
  * Overview of store performance and quick stats
  */
 import AdminLayout from '@/components/admin/AdminLayout.astro';
-import { createServerSupabase } from '@/lib/supabase';
+import { checkAdmin } from '@/lib/supabase';
 
-const supabase = createServerSupabase(Astro.cookies);
+const { supabase, isAdmin, user } = await checkAdmin(Astro.cookies);
+if (!isAdmin) return Astro.redirect('/auth/login?redirect=/admin/');
 
-// Fetch summary stats
-const { data: orders } = await supabase
-  .from('orders')
-  .select('id, status, payment_status, total, created_at');
+// Fetch all summary stats in parallel
+const [ordersResult, productResult, reviewResult, couponResult] = await Promise.all([
+  supabase.from('orders').select('id, status, payment_status, total, created_at'),
+  supabase.from('products').select('*', { count: 'exact', head: true }),
+  supabase.from('reviews').select('*', { count: 'exact', head: true }),
+  supabase.from('coupons').select('*', { count: 'exact', head: true }),
+]);
 
-const { count: productCount } = await supabase
-  .from('products')
-  .select('*', { count: 'exact', head: true });
-
-const { count: reviewCount } = await supabase
-  .from('reviews')
-  .select('*', { count: 'exact', head: true });
-
-const { count: couponCount } = await supabase
-  .from('coupons')
-  .select('*', { count: 'exact', head: true });
+const orders = ordersResult.data;
+const productCount = productResult.count;
+const reviewCount = reviewResult.count;
+const couponCount = couponResult.count;
 
 // Calculate stats
 const totalOrders = orders?.length || 0;
@@ -53,7 +50,7 @@ function formatDate(dateString: string): string {
 }
 ---
 
-<AdminLayout title="Dashboard" currentPage="dashboard">
+<AdminLayout title="Dashboard" currentPage="dashboard" userEmail={user?.email}>
   <!-- Stats Grid -->
   <div class="stats-grid">
     <div class="stat-card">

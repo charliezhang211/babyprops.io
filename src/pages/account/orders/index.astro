@@ -43,38 +43,27 @@ if (statusFilter !== 'all') {
 const { data: orders, count: totalOrders } = await query
   .range((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE - 1);
 
-// Fetch order items for all orders
-let orderItems: OrderItemRow[] = [];
-if (orders && orders.length > 0) {
-  const orderIds = orders.map(o => o.id);
-  const { data: items } = await supabase
-    .from('order_items')
-    .select('*')
-    .in('order_id', orderIds);
-  orderItems = items || [];
-}
+// Fetch order items + status counts in parallel
+const orderIds = orders?.map(o => o.id) || [];
+const [itemsResult, processingResult, shippedResult, deliveredResult] = await Promise.all([
+  orderIds.length > 0
+    ? supabase.from('order_items').select('*').in('order_id', orderIds)
+    : Promise.resolve({ data: [] }),
+  supabase.from('orders').select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id).in('status', ['pending', 'paid', 'processing']),
+  supabase.from('orders').select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id).eq('status', 'shipped'),
+  supabase.from('orders').select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id).eq('status', 'delivered'),
+]);
+
+const orderItems: OrderItemRow[] = itemsResult.data || [];
+const processingCount = processingResult.count;
+const shippedCount = shippedResult.count;
+const deliveredCount = deliveredResult.count;
 
 // Calculate pagination
 const totalPages = Math.ceil((totalOrders || 0) / ORDERS_PER_PAGE);
-
-// Get order counts by status for filter badges
-const { count: processingCount } = await supabase
-  .from('orders')
-  .select('*', { count: 'exact', head: true })
-  .eq('user_id', user.id)
-  .in('status', ['pending', 'paid', 'processing']);
-
-const { count: shippedCount } = await supabase
-  .from('orders')
-  .select('*', { count: 'exact', head: true })
-  .eq('user_id', user.id)
-  .eq('status', 'shipped');
-
-const { count: deliveredCount } = await supabase
-  .from('orders')
-  .select('*', { count: 'exact', head: true })
-  .eq('user_id', user.id)
-  .eq('status', 'delivered');
 
 // Status filter tabs configuration
 const statusTabs = [
