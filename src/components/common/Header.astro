@@ -1,8 +1,7 @@
 ---
 // Header Component
 import Icon from "./Icon.astro";
-import CartIcon from "@/components/commerce/CartIcon";
-import AuthButton from "@/components/auth/AuthButton";
+// CartIcon and AuthButton rendered as static HTML (React Islands fail on Cloudflare SSR)
 import { siteSettings } from "@/config/site-settings";
 
 const navItems = [
@@ -38,8 +37,17 @@ const navItems = [
 
         <!-- Actions -->
         <div class="header-actions">
-            <AuthButton client:load />
-            <CartIcon client:load />
+            <!-- Account Icon -->
+            <a href="/auth/login/" class="cart-toggle" aria-label="Sign In">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </a>
+            <!-- Cart Icon -->
+            <a href="/cart/" class="cart-toggle" aria-label="View Cart">
+                <Icon name="cart" size={22} />
+            </a>
 
             <!-- Mobile Menu Toggle -->
             <button
