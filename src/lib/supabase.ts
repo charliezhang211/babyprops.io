@@ -7,8 +7,15 @@ import { createBrowserClient, createServerClient } from '@supabase/ssr';
 import type { AstroCookies } from 'astro';
 
 // Environment variables
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+/**
+ * Check if Supabase credentials are configured
+ */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(supabaseUrl && supabaseAnonKey);
+}
 
 /**
  * Create a Supabase client for browser/client-side use
