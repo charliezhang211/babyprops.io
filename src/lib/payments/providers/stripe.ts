@@ -127,7 +127,7 @@ class StripeProvider implements PaymentProvider {
     };
   }
 
-  verifyWebhook(payload: string, signature: string): boolean {
+  async verifyWebhook(payload: string, headers: Record<string, string>): Promise<boolean> {
     // const stripe = new Stripe(getConfig().secretKey);
     //
     // try {

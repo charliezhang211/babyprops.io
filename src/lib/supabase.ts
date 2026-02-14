@@ -41,7 +41,7 @@ export function createServerSupabase(cookies: AstroCookies) {
         }
         return cookieStore;
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
         for (const { name, value, options } of cookiesToSet) {
           cookies.set(name, value, {
             path: '/',

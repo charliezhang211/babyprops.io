@@ -68,8 +68,8 @@ const breadcrumbs = [
 // Short description for Specifications section (customizable per product MD)
 const shortDescription = data.short_description;
 
-// Build product variants for Configurator
-const variants = data.variants || [];
+// Build product variants for Configurator (add label from name)
+const variants = (data.variants || []).map(v => ({ ...v, label: v.name }));
 
 // SSR pre-load reviews data for faster page load
 let initialReviews: any[] = [];
@@ -225,7 +225,7 @@ const meta = {
       <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
         <!-- Left Column: Gallery -->
         <div>
-          <Gallery images={galleryImages} productName={data.title} />
+          <Gallery images={galleryImages} productTitle={data.title} />
         </div>
 
         <!-- Right Column: Product Info & Actions -->

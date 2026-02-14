@@ -79,7 +79,7 @@ const PAYMENT_METHOD_CONFIGS: Record<PaymentMethodId, PaymentMethodConfig> = {
 // Provider Registry
 // ============================================
 
-const providers: Map<PaymentMethodId, PaymentProvider> = new Map([
+const providers = new Map<PaymentMethodId, PaymentProvider>([
   ['paypal', paypalProvider],
   ['stripe', stripeProvider],
   ['bank_transfer', bankTransferProvider],
