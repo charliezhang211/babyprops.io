@@ -121,13 +121,52 @@ const currentPath = Astro.url.pathname;
           </svg>
         </button>
 
-        <!-- Account Icon -->
-        <a href="/auth/login/" class="p-2 text-gray-700 hover:text-brand transition-colors" aria-label="Sign In" id="auth-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </a>
+        <!-- Account Icon / Dropdown -->
+        <div class="relative" id="auth-container">
+          <!-- Default: login link (replaced by JS if logged in) -->
+          <a href="/auth/login/" class="p-2 text-gray-700 hover:text-brand transition-colors" aria-label="Sign In" id="auth-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </a>
+          <!-- Logged-in avatar button (hidden by default) -->
+          <button class="hidden items-center gap-1 p-1 group" id="auth-avatar-btn" aria-label="Account menu">
+            <span class="w-8 h-8 bg-brand rounded-full flex items-center justify-center text-white text-xs font-semibold" id="auth-avatar-initials"></span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500 transition-transform duration-200" id="auth-avatar-arrow">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <!-- Account dropdown menu (hidden by default) -->
+          <div class="hidden absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden" id="auth-dropdown">
+            <div class="px-4 py-3 bg-brand-light">
+              <span class="block text-sm font-semibold text-brand-dark" id="auth-dropdown-name">User</span>
+              <span class="block text-xs text-gray-500 mt-0.5 truncate" id="auth-dropdown-email"></span>
+            </div>
+            <div class="h-px bg-gray-200"></div>
+            <div class="py-1">
+              <a href="/account/" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-light hover:text-brand-dark transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+              </a>
+              <a href="/account/orders/" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-light hover:text-brand-dark transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                Orders
+              </a>
+              <a href="/account/addresses/" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-light hover:text-brand-dark transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Addresses
+              </a>
+            </div>
+            <div class="h-px bg-gray-200"></div>
+            <div class="py-1">
+              <button id="auth-signout-btn" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left cursor-pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Cart Icon -->
         <a href="/cart/" class="relative p-2 text-gray-700 hover:text-brand transition-colors" aria-label="View Cart" id="cart-icon">
@@ -217,16 +256,17 @@ const currentPath = Astro.url.pathname;
       </ul>
 
       <!-- Mobile Account Link -->
-      <div class="mt-4 pt-4 border-t border-gray-200">
+      <div class="mt-4 pt-4 border-t border-gray-200" id="mobile-auth-section">
         <a
           href="/auth/login/"
           class="flex items-center gap-3 py-3 px-4 text-gray-700 hover:bg-brand-light rounded-md transition-colors font-medium"
+          id="mobile-auth-link"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          My Account
+          <span id="mobile-auth-text">Sign In</span>
         </a>
       </div>
 
@@ -347,6 +387,120 @@ const currentPath = Astro.url.pathname;
   // Re-check when localStorage changes (other tabs or cart updates)
   window.addEventListener('storage', updateCartCount);
   window.addEventListener('cart-item-added', updateCartCount);
+
+  // --- Auth: account icon / dropdown ---
+  async function initHeaderAuth() {
+    try {
+      const { createBrowserClient } = await import('@supabase/ssr');
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+      if (!supabaseUrl || !supabaseAnonKey) return;
+
+      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+      const { data: { session } } = await supabase.auth.getSession();
+
+      function showLoggedIn(user: any) {
+        const authIcon = document.getElementById('auth-icon');
+        const avatarBtn = document.getElementById('auth-avatar-btn');
+        const initialsEl = document.getElementById('auth-avatar-initials');
+        const nameEl = document.getElementById('auth-dropdown-name');
+        const emailEl = document.getElementById('auth-dropdown-email');
+        const mobileLink = document.getElementById('mobile-auth-link') as HTMLAnchorElement | null;
+        const mobileText = document.getElementById('mobile-auth-text');
+
+        if (!authIcon || !avatarBtn) return;
+
+        const fullName = user?.user_metadata?.full_name || '';
+        const email = user?.email || '';
+        const initials = (fullName || email || 'U')
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+
+        // Desktop: hide login link, show avatar
+        authIcon.classList.add('hidden');
+        avatarBtn.classList.remove('hidden');
+        avatarBtn.classList.add('flex');
+        if (initialsEl) initialsEl.textContent = initials;
+        if (nameEl) nameEl.textContent = fullName || 'User';
+        if (emailEl) emailEl.textContent = email;
+
+        // Mobile: update link to account page
+        if (mobileLink) {
+          mobileLink.href = '/account/';
+        }
+        if (mobileText) {
+          mobileText.textContent = 'My Account';
+        }
+      }
+
+      function showLoggedOut() {
+        const authIcon = document.getElementById('auth-icon');
+        const avatarBtn = document.getElementById('auth-avatar-btn');
+        const dropdown = document.getElementById('auth-dropdown');
+        const mobileLink = document.getElementById('mobile-auth-link') as HTMLAnchorElement | null;
+        const mobileText = document.getElementById('mobile-auth-text');
+
+        if (authIcon) authIcon.classList.remove('hidden');
+        if (avatarBtn) {
+          avatarBtn.classList.add('hidden');
+          avatarBtn.classList.remove('flex');
+        }
+        if (dropdown) dropdown.classList.add('hidden');
+        if (mobileLink) mobileLink.href = '/auth/login/';
+        if (mobileText) mobileText.textContent = 'Sign In';
+      }
+
+      // Initial state
+      if (session?.user) {
+        showLoggedIn(session.user);
+      }
+
+      // Listen for auth changes
+      supabase.auth.onAuthStateChange((_event: string, session: any) => {
+        if (session?.user) {
+          showLoggedIn(session.user);
+        } else {
+          showLoggedOut();
+        }
+      });
+
+      // Dropdown toggle
+      const avatarBtn = document.getElementById('auth-avatar-btn');
+      const dropdown = document.getElementById('auth-dropdown');
+      const arrow = document.getElementById('auth-avatar-arrow');
+
+      avatarBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown?.classList.toggle('hidden');
+        arrow?.classList.toggle('rotate-180');
+      });
+
+      // Close dropdown on outside click
+      document.addEventListener('click', (e) => {
+        const container = document.getElementById('auth-container');
+        if (container && !container.contains(e.target as Node)) {
+          dropdown?.classList.add('hidden');
+          arrow?.classList.remove('rotate-180');
+        }
+      });
+
+      // Sign out
+      document.getElementById('auth-signout-btn')?.addEventListener('click', async () => {
+        dropdown?.classList.add('hidden');
+        await supabase.auth.signOut();
+        window.location.href = '/';
+      });
+
+    } catch (err) {
+      console.error('Header auth init failed:', err);
+    }
+  }
+
+  // Run on page load (supports View Transitions)
+  document.addEventListener('astro:page-load', initHeaderAuth);
 </script>
 
 <style>
