@@ -326,18 +326,24 @@ const currentPath = Astro.url.pathname;
   // --- Cart count badge from localStorage ---
   function updateCartCount() {
     try {
+      const badge = document.getElementById('cart-count');
+      if (!badge) return;
       const raw = localStorage.getItem('commerce-kit-cart');
       if (raw) {
         const items = JSON.parse(raw);
-        const badge = document.getElementById('cart-count');
-        if (badge && Array.isArray(items) && items.length > 0) {
+        if (Array.isArray(items) && items.length > 0) {
           badge.textContent = String(items.length);
           badge.classList.remove('hidden');
+          return;
         }
       }
+      // Hide badge when cart is empty
+      badge.classList.add('hidden');
+      badge.textContent = '';
     } catch {}
   }
-  updateCartCount();
+  // Run on initial load AND after View Transitions navigation
+  document.addEventListener('astro:page-load', updateCartCount);
   // Re-check when localStorage changes (other tabs or cart updates)
   window.addEventListener('storage', updateCartCount);
   window.addEventListener('cart-item-added', updateCartCount);
