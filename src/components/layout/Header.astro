@@ -121,11 +121,24 @@ const currentPath = Astro.url.pathname;
           </svg>
         </button>
 
-        <!-- Account Icon (React Island) -->
-        <AuthButton client:load />
+        <!-- Account Icon (static fallback + React Island) -->
+        <a href="/auth/login/" class="p-2 text-gray-700 hover:text-brand transition-colors" aria-label="Sign In" id="auth-fallback">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </a>
+        <AuthButton client:only="react" />
 
-        <!-- Cart Icon (React Island) -->
-        <CartIcon client:idle />
+        <!-- Cart Icon (static fallback + React Island) -->
+        <a href="/cart/" class="relative p-2 text-gray-700 hover:text-brand transition-colors" aria-label="View Cart" id="cart-fallback">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+          </svg>
+        </a>
+        <CartIcon client:only="react" />
 
         <!-- Mobile Menu Toggle -->
         <button

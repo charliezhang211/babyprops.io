@@ -23,6 +23,8 @@ export default function AuthButton() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Hide static fallback icon now that React island is mounted
+    document.getElementById('auth-fallback')?.remove();
     initAuth();
     initCartListeners();
   }, []);

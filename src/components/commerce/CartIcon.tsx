@@ -17,6 +17,8 @@ export default function CartIcon() {
 
   // Only show count after client-side mount to avoid hydration mismatch
   useEffect(() => {
+    // Hide static fallback icon now that React island is mounted
+    document.getElementById('cart-fallback')?.remove();
     // Snapshot current count so localStorage restore doesn't trigger animation
     prevCountRef.current = cartCount.get();
     setIsMounted(true);
