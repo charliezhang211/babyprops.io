@@ -89,7 +89,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Create review
-    const { data: review, error } = await supabase
+    // Note: Do NOT chain .select().single() here — the RLS SELECT policy
+    // blocks reading pending reviews for anonymous users, which would cause
+    // the entire operation to fail even though the INSERT succeeds.
+    const { error } = await supabase
       .from('reviews')
       .insert({
         product_slug: body.product_slug,
@@ -101,9 +104,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         content: body.content.trim(),
         images: images.length > 0 ? images : [],
         status: 'pending', // All reviews start as pending
-      })
-      .select()
-      .single();
+      });
 
     if (error) {
       console.error('Failed to create review:', error);
@@ -128,9 +129,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       success: true,
       message: 'Review submitted successfully. It will appear after approval.',
       review: {
-        id: review.id,
-        rating: review.rating,
-        verified_purchase: review.verified_purchase,
+        rating: body.rating,
       },
     }), {
       status: 201,
