@@ -1106,7 +1106,12 @@
 
 /* Delete Confirmation Modal */
 .settings-modal-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4;
+  @apply fixed inset-0 z-50 items-center justify-center bg-black/50 p-4;
+  display: flex;
+}
+
+.settings-modal-overlay.hidden {
+  display: none;
 }
 
 .settings-modal {
