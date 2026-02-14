@@ -1,16 +1,14 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
-import node from '@astrojs/node';
+import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://babyprops.io',
   output: 'server',
-  adapter: node({
-    mode: 'standalone',
-  }),
+  adapter: cloudflare(),
   // Prefetch: hover by default, product links upgraded per-component
   prefetch: {
     prefetchAll: true,
