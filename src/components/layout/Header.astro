@@ -14,8 +14,8 @@
 
 import { siteSettings } from '@/config/site-settings';
 import { categories } from '@/config/categories';
-import CartIcon from '@/components/commerce/CartIcon';
-import AuthButton from '@/components/auth/AuthButton';
+// CartIcon and AuthButton rendered as static HTML with inline script enhancement
+// React Islands were failing on Cloudflare SSR, so we use vanilla JS instead
 
 // 主导航链接
 const navItems = [
@@ -121,24 +121,23 @@ const currentPath = Astro.url.pathname;
           </svg>
         </button>
 
-        <!-- Account Icon (static fallback + React Island) -->
-        <a href="/auth/login/" class="p-2 text-gray-700 hover:text-brand transition-colors" aria-label="Sign In" id="auth-fallback">
+        <!-- Account Icon -->
+        <a href="/auth/login/" class="p-2 text-gray-700 hover:text-brand transition-colors" aria-label="Sign In" id="auth-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
         </a>
-        <AuthButton client:only="react" />
 
-        <!-- Cart Icon (static fallback + React Island) -->
-        <a href="/cart/" class="relative p-2 text-gray-700 hover:text-brand transition-colors" aria-label="View Cart" id="cart-fallback">
+        <!-- Cart Icon -->
+        <a href="/cart/" class="relative p-2 text-gray-700 hover:text-brand transition-colors" aria-label="View Cart" id="cart-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1" />
             <circle cx="20" cy="21" r="1" />
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
           </svg>
+          <span id="cart-count" class="hidden absolute -top-0.5 -right-0.5 min-w-[20px] h-5 flex items-center justify-center text-xs font-bold text-white bg-brand rounded-full px-1.5"></span>
         </a>
-        <CartIcon client:only="react" />
 
         <!-- Mobile Menu Toggle -->
         <button
@@ -323,6 +322,25 @@ const currentPath = Astro.url.pathname;
       closeIcon?.classList.add('hidden');
     }
   });
+
+  // --- Cart count badge from localStorage ---
+  function updateCartCount() {
+    try {
+      const raw = localStorage.getItem('commerce-kit-cart');
+      if (raw) {
+        const items = JSON.parse(raw);
+        const badge = document.getElementById('cart-count');
+        if (badge && Array.isArray(items) && items.length > 0) {
+          badge.textContent = String(items.length);
+          badge.classList.remove('hidden');
+        }
+      }
+    } catch {}
+  }
+  updateCartCount();
+  // Re-check when localStorage changes (other tabs or cart updates)
+  window.addEventListener('storage', updateCartCount);
+  window.addEventListener('cart-item-added', updateCartCount);
 </script>
 
 <style>
