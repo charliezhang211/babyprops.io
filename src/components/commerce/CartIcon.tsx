@@ -13,31 +13,39 @@ export default function CartIcon() {
   const [isMounted, setIsMounted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const prevCountRef = useRef(count);
+  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Only show count after client-side mount to avoid hydration mismatch
   useEffect(() => {
+    // Snapshot current count so localStorage restore doesn't trigger animation
+    prevCountRef.current = cartCount.get();
     setIsMounted(true);
   }, []);
 
-  // Animate when count increases
+  // Animate when count increases (only after mount, skip initial localStorage restore)
   useEffect(() => {
     if (isMounted && count > prevCountRef.current) {
+      if (animationTimer.current) clearTimeout(animationTimer.current);
       setIsAnimating(true);
-      const timer = setTimeout(() => setIsAnimating(false), 600);
-      return () => clearTimeout(timer);
+      animationTimer.current = setTimeout(() => setIsAnimating(false), 600);
     }
+    // Always update ref so we only animate on genuine new additions
     prevCountRef.current = count;
   }, [count, isMounted]);
 
   // Listen for cart-item-added event for immediate feedback
   useEffect(() => {
     const handleCartAdd = () => {
+      if (animationTimer.current) clearTimeout(animationTimer.current);
       setIsAnimating(true);
-      setTimeout(() => setIsAnimating(false), 600);
+      animationTimer.current = setTimeout(() => setIsAnimating(false), 600);
     };
 
     window.addEventListener('cart-item-added', handleCartAdd);
-    return () => window.removeEventListener('cart-item-added', handleCartAdd);
+    return () => {
+      window.removeEventListener('cart-item-added', handleCartAdd);
+      if (animationTimer.current) clearTimeout(animationTimer.current);
+    };
   }, []);
 
   return (
