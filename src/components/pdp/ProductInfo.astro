@@ -27,6 +27,7 @@
  */
 
 import Badge from '@/components/ui/Badge.astro';
+import PdpRating from '@/components/reviews/PdpRating';
 import { siteSettings } from '@/config/site-settings';
 import { CURRENCY } from '@/config/site';
 
@@ -34,6 +35,7 @@ interface Props {
   title: string;
   price: number;
   sku: string;
+  productSlug: string;
   material?: string;
   colorFamily?: string;
   propSize?: string;
@@ -46,6 +48,7 @@ const {
   title,
   price,
   sku,
+  productSlug,
   material,
   colorFamily,
   propSize,
@@ -80,6 +83,11 @@ const formattedPrice = new Intl.NumberFormat('en-US', {
   <h1 class="text-3xl md:text-4xl font-serif text-brand-dark mb-3">
     {title}
   </h1>
+
+  <!-- Rating Stars -->
+  <div class="mb-3">
+    <PdpRating client:visible productSlug={productSlug} />
+  </div>
 
   <!-- Price -->
   <div class="mb-6">
