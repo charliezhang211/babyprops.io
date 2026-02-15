@@ -28,7 +28,6 @@ import ProductReviewsSection from "@/components/reviews/ProductReviewsSection";
 import { siteSettings } from "@/config/site-settings";
 import { CURRENCY } from "@/config/site";
 import { getCategoryBySlug } from "@/config/categories";
-import { createServerSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
 // Type definition
 type Product = CollectionEntry<"products">;
@@ -71,56 +70,8 @@ const shortDescription = data.short_description;
 // Build product variants for Configurator (add label from name)
 const variants = (data.variants || []).map(v => ({ ...v, label: v.name }));
 
-// SSR pre-load reviews data for faster page load
-let initialReviews: any[] = [];
-let initialStats: any = null;
-let initialPagination: any = null;
-
-try {
-  if (!isSupabaseConfigured()) throw new Error('Supabase not configured');
-  const supabase = createServerSupabase(Astro.cookies);
-
-  // Fetch first 10 approved reviews
-  const { data: reviews, count } = await supabase
-    .from("reviews")
-    .select("*", { count: "exact" })
-    .eq("product_slug", data.slug)
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .range(0, 9);
-
-  initialReviews = reviews || [];
-
-  // Fetch review stats
-  const { data: stats } = await supabase
-    .from("product_review_stats")
-    .select("*")
-    .eq("product_slug", data.slug)
-    .single();
-
-  initialStats = stats || {
-    review_count: 0,
-    average_rating: 0,
-    five_star: 0,
-    four_star: 0,
-    three_star: 0,
-    two_star: 0,
-    one_star: 0,
-    verified_count: 0,
-  };
-
-  initialPagination = {
-    page: 1,
-    limit: 10,
-    total: count || 0,
-    totalPages: Math.ceil((count || 0) / 10),
-  };
-} catch (e) {
-  // Silently fail - client-side will fetch
-  if (e instanceof Error && e.message !== 'Supabase not configured') {
-    console.error("Failed to pre-load reviews:", e);
-  }
-}
+// Reviews are fetched client-side (not SSR) because this page is pre-rendered.
+// SSR data would be stale (baked at build time), so the React component fetches fresh data on mount.
 
 // SEO Metadata
 const pageTitle =
@@ -308,9 +259,6 @@ const meta = {
           client:visible
           productSlug={data.slug}
           productName={data.title}
-          initialReviews={initialReviews}
-          initialStats={initialStats}
-          initialPagination={initialPagination}
         />
       </section>
 
