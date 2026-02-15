@@ -86,7 +86,7 @@ const formattedPrice = new Intl.NumberFormat('en-US', {
 
   <!-- Rating Stars -->
   <div class="mb-3">
-    <PdpRating client:visible productSlug={productSlug} />
+    <PdpRating client:load productSlug={productSlug} />
   </div>
 
   <!-- Price -->
